@@ -8,7 +8,8 @@ e esse projeto adere ao Semver [Versionamento Semântico](https://semver.org/spe
 - 
 
 ### Adicionado (Added)
-- 
+- **0001** - Commit Inicial
+- **0002** - Integrando API `MusicBrainz` e `Deezer` para imagens.
 
 ### Alterado (Changed)
 - 
@@ -26,7 +27,8 @@ e esse projeto adere ao Semver [Versionamento Semântico](https://semver.org/spe
 - 
 
 ### Versões
-- 
+- **0001** - Commit Inicial
+
 
 ### Exemplo
 - **1.0** - Iniciado o desenvolvimento do projeto `musicpostr`. 
