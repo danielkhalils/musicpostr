@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, Trophy, Flame, Music, TrendingUp, Award } from 'lucide-react';
+import { Loader2, Trophy, Flame, TrendingUp, Award } from 'lucide-react';
 import './RankingsPage.css';
 
 interface RankingAlbum {
@@ -15,7 +15,6 @@ interface RankingAlbum {
   rank: number;
 }
 
-// Lista estruturada com emojis para cada card de ritmo/gênero
 const genresList = [
   { name: 'Todos', emoji: '🌟' },
   { name: 'Pop', emoji: '🎤' },
@@ -24,7 +23,7 @@ const genresList = [
   { name: 'Indie', emoji: '🎧' },
   { name: 'Eletrônica', emoji: '⚡' },
   { name: 'R&B', emoji: '🎷' },
-  { name: 'Samba e pagode', emoji: '🥁' }, // ou outro emoji representativo
+  { name: 'Samba e pagode', emoji: '🥁' },
 ];
 
 export function RankingsPage() {
@@ -46,7 +45,6 @@ export function RankingsPage() {
             const rating = Number((9.9 - (index * 0.12)).toFixed(1));
             const reviewsCount = 120 - (index * 4) + ((index * 7) % 15);
 
-            // Distribui os gêneros cíclicos excluindo a opção 'Todos'
             const availableGenresOnly = genresList.filter(g => g.name !== 'Todos');
             const assignedGenre = availableGenresOnly[index % availableGenresOnly.length].name;
 
@@ -79,14 +77,14 @@ export function RankingsPage() {
     : rankings.filter(r => (r.genreName ?? '').toLowerCase() === activeGenre.toLowerCase());
 
   return (
-    <div className="rankings-container">
+    <div className="page-container">
       
       {/* Cabeçalho */}
-      <div className="rankings-header">
-        <h1 className="rankings-title text-white">
+      <div className="page-header-wrapper">
+        <h1 className="page-title text-white">
           <Trophy className="h-8 w-8 text-amber-400 fill-amber-400" /> Rankings & Estatísticas
         </h1>
-        <p className="rankings-subtitle">
+        <p className="page-subtitle">
           Os álbuns mais aclamados, votados e comentados pela comunidade do musicpostr em tempo real.
         </p>
       </div>
@@ -114,7 +112,7 @@ export function RankingsPage() {
         </div>
       )}
 
-      {/* Seção de Gêneros em Grade Estilo YouTube Music com Emojis */}
+      {/* Seção de Gêneros em Grade com Emojis */}
       <div className="genre-grid-section">
         <h2 className="section-heading">Momentos e Gêneros</h2>
         <div className="genre-cards-grid">

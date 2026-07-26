@@ -1,12 +1,12 @@
 /* =================================================================
-   1. CONTAINER PRINCIPAL E HERO SECTION
+   CONTAINER E HERO SECTION RESPONSIVO
    ================================================================= */
 .album-detail-container {
   min-height: calc(100vh - 4rem);
   background-color: #09090b;
   color: #ffffff;
   padding-bottom: 4rem;
-  margin-top: -4rem;
+  margin-top: 0 !important; /* Remove margens negativas que jogavam para baixo da navbar */
   position: relative;
 }
 
@@ -16,12 +16,7 @@
   overflow: hidden;
   display: flex;
   align-items: flex-end;
-}
-
-@media (min-width: 768px) {
-  .album-hero-wrapper {
-    min-height: 28rem;
-  }
+  padding-top: 1.5rem; /* Garencia respiro para o conteúdo não colar na navbar */
 }
 
 .album-hero-bg {
@@ -53,24 +48,41 @@
   pointer-events: none;
 }
 
-.album-hero-content {
+/* Grid do Topo: Empilhado no mobile e lado a lado apenas em desktop (>= 1024px) */
+.album-hero-content-grid {
   position: relative;
   max-width: 72rem;
   margin-left: auto;
   margin-right: auto;
   width: 100%;
-  padding: 2.5rem 1rem 3rem 1rem;
+  padding: 2.5rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
-@media (min-width: 768px) {
-  .album-hero-content {
-    padding: 3rem 1.5rem 3.5rem 1.5rem;
+@media (min-width: 1024px) {
+  .album-hero-content-grid {
+    padding: 3.5rem 1.5rem 3rem 1.5rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    align-items: stretch;
+    gap: 2rem;
+  }
+}
+
+.album-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .album-hero-left {
     flex-direction: row;
-    align-items: flex-start;
-    gap: 2.5rem;
+    align-items: center;
+    gap: 2rem;
   }
 }
 
@@ -104,58 +116,55 @@
 
 
 /* =================================================================
-   2. CAPA, INFOS E DETALHES DO ÁLBUM
+   CAPA, INFOS E DETALHES DO ÁLBUM
    ================================================================= */
 .album-cover-container {
-  width: 18rem !important;
-  height: 18rem !important;
-  min-width: 18rem !important;
-  min-height: 18rem !important;
-  flex-shrink: 0;
+  width: 20rem !important;
+  height: 20rem !important;
+  min-width: 20rem !important;
+  min-height: 20rem !important;
+  max-width: 20rem !important;
+  max-height: 20rem !important;
+  flex-shrink: 0 !important;
   border-radius: 1rem;
   overflow: hidden;
   background-color: #27272a;
   box-shadow: 0 25px 35px -5px rgba(0, 0, 0, 0.7), 0 15px 15px -5px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 0 auto;
 }
 
-@media (max-width: 767px) {
+@media (min-width: 640px) {
   .album-cover-container {
-    width: 14rem !important;
-    height: 14rem !important;
-    min-width: 14rem !important;
-    min-height: 14rem !important;
-    margin: 0 auto;
+    margin: 0;
   }
 }
 
-.album-details-row {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 100%;
-  gap: 1.5rem;
-  flex: 1;
+.album-cover-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block;
 }
 
-@media (min-width: 1024px) {
-  .album-details-row {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-}
-
-.album-info {
+.album-info-wrapper {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   flex: 1;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .album-info-wrapper {
+    text-align: left;
+  }
 }
 
 .album-title {
-  font-size: 2rem;
-  line-height: 2.25rem;
+  margin-top: 0.25rem;
+  font-size: 1.75rem;
+  line-height: 2rem;
   font-weight: 900;
   letter-spacing: -0.025em;
   color: #ffffff;
@@ -163,8 +172,8 @@
 
 @media (min-width: 768px) {
   .album-title {
-    font-size: 3rem;
-    line-height: 1;
+    font-size: 2.5rem;
+    line-height: 1.1;
   }
 }
 
@@ -177,6 +186,7 @@
 
 .album-metadata {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 1rem;
   font-size: 0.875rem;
@@ -184,9 +194,15 @@
   margin-top: 0.25rem;
 }
 
+@media (min-width: 640px) {
+  .album-metadata {
+    justify-content: flex-start;
+  }
+}
+
 
 /* =================================================================
-   3. BOTÕES DE STREAMING (Com folga para o translateY não cortar)
+   BOTÕES DE STREAMING
    ================================================================= */
 .streaming-wrapper {
   margin-top: 0.75rem;
@@ -196,10 +212,11 @@
   display: flex;
   flex-wrap: nowrap;
   gap: 0.6rem;
-  padding-top: 0.35rem; /* Folga superior para o hover translateY */
-  padding-bottom: 0.35rem;
+  padding-top: 2rem;
+  padding-bottom: 0.5rem;
   overflow-x: auto;
   scrollbar-width: none;
+  justify-content: flex-start;
 }
 
 .streaming-links-container::-webkit-scrollbar {
@@ -255,31 +272,32 @@
 
 
 /* =================================================================
-   4. NOTA DA COMUNIDADE (MUSICPOSTR) - Alinhada ao topo
+   NOTA DA COMUNIDADE (MUSICPOSTR)
    ================================================================= */
 .musicpostr-score-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* Alinhado estritamente ao topo */
-  flex-shrink: 0;
-  padding-top: 0;
+  justify-content: center;
+  width: 100%;
+  padding: 1rem 0;
 }
 
 @media (min-width: 1024px) {
   .musicpostr-score-wrapper {
     padding-left: 2rem;
     border-left: 1px solid rgba(255, 255, 255, 0.08);
+    min-height: 14rem;
+    justify-content: center;
   }
 }
 
 .musicpostr-score-badge {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 7rem;
-  height: 7rem;
+  width: 7.5rem;
+  height: 7.5rem;
   border-radius: 9999px;
   background-color: #121215;
   border: 3px solid #3b82f6;
@@ -292,34 +310,26 @@
 }
 
 .musicpostr-score-number {
-  font-size: 2.5rem;
+  font-size: 3rem;
   line-height: 1;
   font-weight: 900;
   color: #ffffff;
   letter-spacing: -0.05em;
 }
 
-.musicpostr-score-max {
-  font-size: 0.75rem;
-  color: #a1a1aa;
-  font-weight: 600;
-  text-transform: uppercase;
-  margin-top: 0.15rem;
-}
-
 .musicpostr-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #a1a1aa;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.75rem;
   font-weight: 700;
   text-align: center;
 }
 
 
 /* =================================================================
-   5. LAYOUT PRINCIPAL (Alinhado exatamente com o max-width: 72rem do topo)
+   GRID INFERIOR (Sincronizado)
    ================================================================= */
 .album-main-layout {
   max-width: 72rem;
@@ -329,6 +339,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
+  align-items: start;
 }
 
 @media (min-width: 1024px) {
@@ -429,7 +440,7 @@
 
 
 /* =================================================================
-   6. TRACKLIST E FEED DA COMUNIDADE
+   TRACKLIST E FEED DA COMUNIDADE
    ================================================================= */
 .tracklist-section {
   margin-top: 2rem;

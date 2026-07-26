@@ -18,6 +18,17 @@ interface AlbumReviewItem {
   totalReviews: number;
 }
 
+const genresList = [
+  { name: 'Todos', emoji: '🌟' },
+  { name: 'Pop', emoji: '🎤' },
+  { name: 'Hip-Hop', emoji: '🔥' },
+  { name: 'Rock', emoji: '🎸' },
+  { name: 'Indie', emoji: '🎧' },
+  { name: 'Eletrônica', emoji: '⚡' },
+  { name: 'R&B', emoji: '🎷' },
+  { name: 'Samba e pagode', emoji: '🥁' },
+];
+
 export function ReviewsPage() {
   const [albums, setAlbums] = useState<AlbumReviewItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -25,7 +36,7 @@ export function ReviewsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   
   const [selectedYear, setSelectedYear] = useState<string>('');
-  const [selectedGenre, setSelectedGenre] = useState<string>('');
+  const [selectedGenre, setSelectedGenre] = useState<string>('Todos');
   const [selectedLabel, setSelectedLabel] = useState<string>('');
 
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -62,6 +73,9 @@ export function ReviewsPage() {
 
           const detailedAlbumsPromises = data.data.map(async (item: any, idx: number) => {
             const uniqueIndex = index + idx;
+            const availableGenresOnly = genresList.filter(g => g.name !== 'Todos');
+            const assignedGenre = availableGenresOnly[uniqueIndex % availableGenresOnly.length].name;
+
             try {
               const detailRes = await fetch(
                 `https://corsproxy.io/?` + encodeURIComponent(`https://api.deezer.com/album/${item.id}`)
@@ -77,7 +91,7 @@ export function ReviewsPage() {
                 cover_medium: item.cover_medium || detailData.cover_medium,
                 cover_big: item.cover_big || detailData.cover_big,
                 release_date: detailData.release_date || '2025',
-                genreName: detailData.genres?.data?.[0]?.name || 'Pop / Rock',
+                genreName: assignedGenre,
                 label: detailData.label || 'Independente',
                 artist: {
                   name: item.artist?.name || 'Artista Desconhecido',
@@ -92,7 +106,7 @@ export function ReviewsPage() {
                 cover_medium: item.cover_medium,
                 cover_big: item.cover_big,
                 release_date: '2025',
-                genreName: 'Pop',
+                genreName: assignedGenre,
                 label: 'Independente',
                 artist: { name: item.artist?.name || 'Artista' },
                 communityRating: 8.0,
@@ -120,10 +134,6 @@ export function ReviewsPage() {
     new Set(albums.map((a) => a.release_date?.substring(0, 4)).filter(Boolean))
   ).sort().reverse();
 
-  const availableGenres = Array.from(
-    new Set(albums.map((a) => a.genreName).filter(Boolean))
-  ).sort();
-
   const availableLabels = Array.from(
     new Set(albums.map((a) => a.label).filter(Boolean))
   ).sort();
@@ -131,19 +141,19 @@ export function ReviewsPage() {
   const filteredAlbums = albums.filter((album) => {
     const albumYear = album.release_date?.substring(0, 4) || '';
     const matchYear = selectedYear ? albumYear === selectedYear : true;
-    const matchGenre = selectedGenre ? album.genreName === selectedGenre : true;
+    const matchGenre = selectedGenre === 'Todos' ? true : album.genreName === selectedGenre;
     const matchLabel = selectedLabel ? album.label === selectedLabel : true;
     return matchYear && matchGenre && matchLabel;
   });
 
   return (
-    <div className="reviews-container">
-      <div className="reviews-header-wrapper">
+    <div className="page-container">
+      <div className="page-header-wrapper flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="reviews-title text-white">
+          <h1 className="page-title text-white">
             <Award className="h-8 w-8 text-white stroke-[2.5]" /> Avaliações da Comunidade
           </h1>
-          <p className="reviews-subtitle">
+          <p className="page-subtitle">
             Explore álbuns, utilize os filtros por ano, gênero e gravadora para refinar suas descobertas.
           </p>
         </div>
@@ -161,10 +171,27 @@ export function ReviewsPage() {
         </div>
       </div>
 
-      {/* Painel de Filtros Básicos */}
-      <div className="reviews-filter-bar">
+      {/* Seção de Gêneros em Grade com Emojis (Integrada nos Filtros) */}
+      <div className="genre-grid-section mb-6">
+        <h2 className="section-heading mb-3">Filtrar por Momento ou Gênero</h2>
+        <div className="genre-cards-grid">
+          {genresList.map((item) => (
+            <button
+              key={item.name}
+              onClick={() => setSelectedGenre(item.name)}
+              className={`genre-card-item ${selectedGenre === item.name ? 'active' : ''}`}
+            >
+              <span className="genre-card-emoji">{item.emoji}</span>
+              <span className="genre-card-name">{item.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Painel de Filtros Secundários (Ano e Gravadora) */}
+      <div className="reviews-filter-bar mb-8">
         <div className="flex items-center gap-2 text-xs font-semibold text-white">
-          <Filter className="h-4 w-4 text-white" /> Filtrar por:
+          <Filter className="h-4 w-4 text-white" /> Filtros Adicionais:
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
@@ -182,19 +209,6 @@ export function ReviewsPage() {
           </select>
 
           <select
-            value={selectedGenre}
-            onChange={(e) => setSelectedGenre(e.target.value)}
-            className="reviews-select-filter"
-          >
-            <option value="">Todos os Gêneros</option>
-            {availableGenres.map((genre) => (
-              <option key={genre} value={genre}>
-                {genre}
-              </option>
-            ))}
-          </select>
-
-          <select
             value={selectedLabel}
             onChange={(e) => setSelectedLabel(e.target.value)}
             className="reviews-select-filter"
@@ -207,11 +221,11 @@ export function ReviewsPage() {
             ))}
           </select>
 
-          {(selectedYear || selectedGenre || selectedLabel) && (
+          {(selectedYear || selectedGenre !== 'Todos' || selectedLabel) && (
             <button
               onClick={() => {
                 setSelectedYear('');
-                setSelectedGenre('');
+                setSelectedGenre('Todos');
                 setSelectedLabel('');
               }}
               className="text-xs text-primary hover:underline font-semibold ml-1"
@@ -222,7 +236,7 @@ export function ReviewsPage() {
         </div>
       </div>
 
-      {/* Tela de Loading ao carregar ou buscar dados */}
+      {/* Tela de Loading */}
       {isLoading ? (
         <div className="min-h-[50vh] flex items-center justify-center">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
