@@ -60,16 +60,15 @@ export function ReviewsPage() {
         let url = '';
 
         if (debouncedSearch.trim() !== '') {
-          url = `https://corsproxy.io/?` + encodeURIComponent(`https://api.deezer.com/search/album?q=${encodeURIComponent(debouncedSearch)}&index=${index}&limit=${limit}`);
+          url = `/api/deezer/search/album?q=${encodeURIComponent(debouncedSearch)}&index=${index}&limit=${limit}`;
         } else {
-          url = `https://corsproxy.io/?` + encodeURIComponent(`https://api.deezer.com/chart/0/albums?index=${index}&limit=${limit}`);
+          url = `/api/deezer/chart/0/albums?index=${index}&limit=${limit}`;
         }
 
         const response = await fetch(url);
         const data = await response.json();
 
         if (data && data.data) {
-          // Utilizando o totalResults recebido da API com fallback seguro
           setTotalResults(typeof data.total === 'number' ? data.total : (data.data.length || 0));
 
           const detailedAlbumsPromises = data.data.map(async (item: any, idx: number) => {
@@ -78,9 +77,7 @@ export function ReviewsPage() {
             const assignedGenre = availableGenresOnly[uniqueIndex % availableGenresOnly.length].name;
 
             try {
-              const detailRes = await fetch(
-                `https://corsproxy.io/?` + encodeURIComponent(`https://api.deezer.com/album/${item.id}`)
-              );
+              const detailRes = await fetch(`/api/deezer/album/${item.id}`);
               const detailData = await detailRes.json();
 
               const mockRating = Number((7.0 + ((uniqueIndex * 37) % 29) / 10).toFixed(1));

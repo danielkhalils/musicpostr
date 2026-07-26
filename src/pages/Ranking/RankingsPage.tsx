@@ -35,9 +35,8 @@ export function RankingsPage() {
     async function fetchRankingsData() {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `https://corsproxy.io/?` + encodeURIComponent(`https://api.deezer.com/chart/0/albums`)
-        );
+        // Utilizando a rota interna configurada no Vercel para evitar bloqueio de CORS em produção
+        const response = await fetch(`/api/deezer/chart/0/albums`);
         const data = await response.json();
 
         if (data && data.data) {
