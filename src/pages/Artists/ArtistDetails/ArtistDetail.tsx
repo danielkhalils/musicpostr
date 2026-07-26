@@ -31,9 +31,8 @@ export function ArtistDetail() {
       setVisibleEpsCount(10);
 
       try {
-        const artistRes = await fetch(
-          `https://corsproxy.io/?` + encodeURIComponent(`https://api.deezer.com/artist/${id}`)
-        );
+        // Utilizando a rota interna configurada no Vercel para evitar bloqueio de CORS em produção
+        const artistRes = await fetch(`/api/deezer/artist/${id}`);
         const artistData = await artistRes.json();
 
         if (artistData && artistData.name) {
@@ -43,9 +42,7 @@ export function ArtistDetail() {
           );
         }
 
-        const albumsRes = await fetch(
-          `https://corsproxy.io/?` + encodeURIComponent(`https://api.deezer.com/artist/${id}/albums?limit=100`)
-        );
+        const albumsRes = await fetch(`/api/deezer/artist/${id}/albums?limit=100`);
         const albumsData = await albumsRes.json();
 
         if (albumsData && albumsData.data) {
