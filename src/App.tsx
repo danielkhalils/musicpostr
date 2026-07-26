@@ -4,6 +4,8 @@ import { ArtistsPage } from "./pages/Artists/ArtistsPage";
 import { ArtistDetail } from "./pages/Artists/ArtistDetails/ArtistDetail";
 import HomePage from "./pages/Home/HomePage";
 import { AlbumDetails } from "./pages/Artists/AlbumDetails/AlbumDetails";
+import { ReviewsPage } from "./pages/Reviews/ReviewsPage";
+import { RankingsPage } from "./pages/Ranking/RankingsPage";
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
             <Route path="/artistas" element={<ArtistsPage />} />
             <Route path="/artista/:id" element={<ArtistDetail />} />
             <Route path="/album/:id" element={<AlbumDetails />} />
+            <Route path="/reviews" element={<ReviewsPage />} />
+            <Route path="/rankings" element={<RankingsPage />} />
           </Routes>
         </main>
       </div>

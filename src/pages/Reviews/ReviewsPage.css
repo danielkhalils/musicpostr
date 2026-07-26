@@ -1,0 +1,303 @@
+/* =================================================================
+   ESTILOS DA PÁGINA DE REVIEWS
+   ================================================================= */
+
+.reviews-container {
+  min-height: calc(100vh - 4rem);
+  background-color: #09090b;
+  color: #ffffff;
+  padding: 2rem 1rem 4rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .reviews-container {
+    padding: 2.5rem 2rem 4rem 2rem;
+  }
+}
+
+.reviews-header-wrapper {
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border-bottom: 1px solid rgba(39, 39, 42, 0.8);
+  padding-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .reviews-header-wrapper {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.reviews-title {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reviews-subtitle {
+  font-size: 0.875rem;
+  color: #a1a1aa;
+  margin-top: 0.25rem;
+}
+
+/* Barra de Pesquisa */
+.reviews-search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .reviews-search-wrapper {
+    width: 22rem;
+  }
+}
+
+.reviews-search-input {
+  width: 100%;
+  background-color: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(39, 39, 42, 0.9);
+  border-radius: 9999px;
+  padding: 0.5rem 1rem 0.5rem 2.25rem;
+  color: #ffffff;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.reviews-search-input:focus {
+  border-color: var(--primary, #3b82f6);
+}
+
+.reviews-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  color: #71717a;
+}
+
+/* Grid de Álbuns */
+.reviews-grid-container {
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .reviews-grid-container {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .reviews-grid-container {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* Card individual do Álbum */
+.review-album-card {
+  background-color: rgba(24, 24, 27, 0.6);
+  border: 1px solid rgba(39, 39, 42, 0.8);
+  border-radius: 1rem;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.review-album-card:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.15);
+}
+
+.review-album-cover {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background-color: #27272a;
+  margin-bottom: 0.75rem;
+}
+
+.review-album-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.review-album-card:hover .review-album-cover img {
+  transform: scale(1.05);
+}
+
+/* Badge de Nota no Card */
+.review-card-score-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  background-color: rgba(18, 18, 21, 0.95);
+  border: 2px solid #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.review-card-score-number {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.review-album-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+
+.review-album-card:hover .review-album-title {
+  color: #3b82f6;
+}
+
+.review-album-artist {
+  font-size: 0.75rem;
+  color: #a1a1aa;
+}
+
+.review-card-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(39, 39, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  color: #71717a;
+}
+
+.review-card-action {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.review-album-card:hover .review-card-action {
+  text-decoration: underline;
+}
+
+/* =================================================================
+   PAGINAÇÃO
+   ================================================================= */
+.pagination-container {
+  max-width: 72rem;
+  margin: 3rem auto 1rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.pagination-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  background-color: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(39, 39, 42, 0.9);
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: rgba(39, 39, 42, 0.9);
+  border-color: var(--primary, #3b82f6);
+  transform: translateY(-1px);
+}
+
+.pagination-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #a1a1aa;
+}
+
+/* =================================================================
+   BARRA DE FILTROS BÁSICOS
+   ================================================================= */
+.reviews-filter-bar {
+  max-width: 72rem;
+  margin: 1.5rem auto 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: rgba(24, 24, 27, 0.4);
+  border: 1px solid rgba(39, 39, 42, 0.7);
+  border-radius: 0.875rem;
+  padding: 1rem 1.25rem;
+  backdrop-filter: blur(8px);
+}
+
+@media (min-width: 768px) {
+  .reviews-filter-bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.reviews-select-filter {
+  background-color: rgba(9, 9, 11, 0.8);
+  border: 1px solid rgba(39, 39, 42, 0.9);
+  border-radius: 9999px;
+  padding: 0.4rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #e4e4e7;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.reviews-select-filter:hover,
+.reviews-select-filter:focus {
+  border-color: var(--primary, #3b82f6);
+}

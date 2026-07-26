@@ -1,3 +1,6 @@
+/* =================================================================
+   1. CONTAINER PRINCIPAL E HERO SECTION
+   ================================================================= */
 .album-detail-container {
   min-height: calc(100vh - 4rem);
   background-color: #09090b;
@@ -10,7 +13,6 @@
 .album-hero-wrapper {
   position: relative;
   width: 100%;
-  min-height: 24rem;
   overflow: hidden;
   display: flex;
   align-items: flex-end;
@@ -57,17 +59,18 @@
   margin-left: auto;
   margin-right: auto;
   width: 100%;
-  padding: 2rem 1rem 3rem 1rem;
+  padding: 2.5rem 1rem 3rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 2rem;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .album-hero-content {
-    padding: 2rem 1.5rem 3rem 1.5rem;
+    padding: 3rem 1.5rem 3.5rem 1.5rem;
     flex-direction: row;
-    align-items: flex-end;
+    align-items: flex-start;
+    gap: 2.5rem;
   }
 }
 
@@ -99,21 +102,47 @@
   color: #ffffff;
 }
 
+
+/* =================================================================
+   2. CAPA, INFOS E DETALHES DO ÁLBUM
+   ================================================================= */
 .album-cover-container {
-  width: 10rem;
-  height: 10rem;
+  width: 18rem !important;
+  height: 18rem !important;
+  min-width: 18rem !important;
+  min-height: 18rem !important;
   flex-shrink: 0;
-  border-radius: 0.75rem;
+  border-radius: 1rem;
   overflow: hidden;
   background-color: #27272a;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 35px -5px rgba(0, 0, 0, 0.7), 0 15px 15px -5px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-@media (min-width: 640px) {
+@media (max-width: 767px) {
   .album-cover-container {
-    width: 13rem;
-    height: 13rem;
+    width: 14rem !important;
+    height: 14rem !important;
+    min-width: 14rem !important;
+    min-height: 14rem !important;
+    margin: 0 auto;
+  }
+}
+
+.album-details-row {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+@media (min-width: 1024px) {
+  .album-details-row {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
   }
 }
 
@@ -121,6 +150,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex: 1;
 }
 
 .album-title {
@@ -154,6 +184,143 @@
   margin-top: 0.25rem;
 }
 
+
+/* =================================================================
+   3. BOTÕES DE STREAMING (Com folga para o translateY não cortar)
+   ================================================================= */
+.streaming-wrapper {
+  margin-top: 0.75rem;
+}
+
+.streaming-links-container {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.6rem;
+  padding-top: 0.35rem; /* Folga superior para o hover translateY */
+  padding-bottom: 0.35rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.streaming-links-container::-webkit-scrollbar {
+  display: none;
+}
+
+.streaming-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: rgba(24, 24, 27, 0.9);
+  border: 1px solid rgba(39, 39, 42, 0.9);
+  backdrop-filter: blur(8px);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
+}
+
+.streaming-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.15);
+}
+
+.streaming-svg-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.streaming-button.deezer { border-color: rgba(255, 115, 0, 0.4); }
+.streaming-button.deezer:hover { background-color: rgba(255, 115, 0, 0.2); border-color: #ff7300; }
+
+.streaming-button.spotify { border-color: rgba(29, 185, 84, 0.4); }
+.streaming-button.spotify:hover { background-color: rgba(29, 185, 84, 0.2); border-color: #1db954; }
+
+.streaming-button.apple { border-color: rgba(250, 45, 75, 0.4); }
+.streaming-button.apple:hover { background-color: rgba(250, 45, 75, 0.2); border-color: #fa2d4b; }
+
+.streaming-button.amazon { border-color: rgba(35, 47, 62, 0.6); }
+.streaming-button.amazon:hover { background-color: rgba(35, 47, 62, 0.4); border-color: #ff9900; }
+
+.streaming-button.tidal { border-color: rgba(0, 255, 255, 0.3); }
+.streaming-button.tidal:hover { background-color: rgba(0, 255, 255, 0.15); border-color: #00ffff; }
+
+.streaming-button.youtube { border-color: rgba(255, 0, 0, 0.4); }
+.streaming-button.youtube:hover { background-color: rgba(255, 0, 0, 0.2); border-color: #ff0000; }
+
+
+/* =================================================================
+   4. NOTA DA COMUNIDADE (MUSICPOSTR) - Alinhada ao topo
+   ================================================================= */
+.musicpostr-score-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Alinhado estritamente ao topo */
+  flex-shrink: 0;
+  padding-top: 0;
+}
+
+@media (min-width: 1024px) {
+  .musicpostr-score-wrapper {
+    padding-left: 2rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+.musicpostr-score-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 9999px;
+  background-color: #121215;
+  border: 3px solid #3b82f6;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7), 0 0 20px rgba(59, 130, 246, 0.35);
+  transition: transform 0.2s;
+}
+
+.musicpostr-score-badge:hover {
+  transform: scale(1.05);
+}
+
+.musicpostr-score-number {
+  font-size: 2.5rem;
+  line-height: 1;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.05em;
+}
+
+.musicpostr-score-max {
+  font-size: 0.75rem;
+  color: #a1a1aa;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 0.15rem;
+}
+
+.musicpostr-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #a1a1aa;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+
+/* =================================================================
+   5. LAYOUT PRINCIPAL (Alinhado exatamente com o max-width: 72rem do topo)
+   ================================================================= */
 .album-main-layout {
   max-width: 72rem;
   margin-left: auto;
@@ -178,6 +345,7 @@
   padding: 1.5rem;
   backdrop-filter: blur(8px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  width: 100%;
 }
 
 .review-card-header {
@@ -205,20 +373,34 @@
 .star-rating-container {
   display: flex;
   gap: 0.375rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   cursor: pointer;
+  flex-wrap: wrap;
 }
 
 .star-icon {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
   color: #3f3f46;
-  transition: color 0.15s;
+  transition: all 0.15s ease;
 }
 
-.star-icon.active {
-  color: #eab308;
-  fill: #eab308;
+.star-icon.active[data-star="1"], .star-icon.active[data-star="2"] { color: #ef4444; fill: #ef4444; }
+.star-icon.active[data-star="3"], .star-icon.active[data-star="4"] { color: #f97316; fill: #f97316; }
+.star-icon.active[data-star="5"], .star-icon.active[data-star="6"] { color: #eab308; fill: #eab308; }
+.star-icon.active[data-star="7"], .star-icon.active[data-star="8"] { color: #84cc16; fill: #84cc16; }
+.star-icon.active[data-star="9"], .star-icon.active[data-star="10"] { color: #10b981; fill: #10b981; filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.6)); }
+
+.gen-z-review-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background-color: rgba(24, 24, 27, 0.9);
+  border: 1px solid rgba(63, 63, 70, 0.5);
+  display: inline-block;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
 }
 
 .review-textarea {
@@ -245,8 +427,13 @@
   margin-top: 1rem;
 }
 
+
+/* =================================================================
+   6. TRACKLIST E FEED DA COMUNIDADE
+   ================================================================= */
 .tracklist-section {
   margin-top: 2rem;
+  width: 100%;
 }
 
 .tracklist-title {
@@ -269,6 +456,7 @@
   border-radius: 0.5rem;
   margin-bottom: 0.5rem;
   transition: background-color 0.2s;
+  width: 100%;
 }
 
 .track-item:hover {
@@ -303,6 +491,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
 }
 
 .community-feed-card {
@@ -311,6 +500,7 @@
   border-radius: 1rem;
   padding: 1.5rem;
   backdrop-filter: blur(8px);
+  width: 100%;
 }
 
 .community-feed-title {
@@ -342,129 +532,4 @@
 .feed-text {
   font-size: 0.875rem;
   color: #a1a1aa;
-}
-
-.streaming-links-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.streaming-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #ffffff;
-  background-color: rgba(24, 24, 27, 0.8);
-  border: 1px solid rgba(39, 39, 42, 0.8);
-  backdrop-filter: blur(8px);
-  text-decoration: none;
-  transition: all 0.2s;
-}
-
-.streaming-svg-icon {
-  width: 1.15rem;
-  height: 1.15rem;
-  flex-shrink: 0;
-}
-
-.streaming-button:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.15);
-}
-
-/* Cores e identidades personalizadas de cada streaming */
-.streaming-button.deezer {
-  border-color: rgba(255, 115, 0, 0.4);
-}
-.streaming-button.deezer:hover {
-  background-color: rgba(255, 115, 0, 0.2);
-  border-color: #ff7300;
-}
-
-.streaming-button.spotify {
-  border-color: rgba(29, 185, 84, 0.4);
-}
-.streaming-button.spotify:hover {
-  background-color: rgba(29, 185, 84, 0.2);
-  border-color: #1db954;
-}
-
-.streaming-button.apple {
-  border-color: rgba(250, 45, 75, 0.4);
-}
-.streaming-button.apple:hover {
-  background-color: rgba(250, 45, 75, 0.2);
-  border-color: #fa2d4b;
-}
-
-.streaming-button.amazon {
-  border-color: rgba(35, 47, 62, 0.6);
-}
-.streaming-button.amazon:hover {
-  background-color: rgba(35, 47, 62, 0.4);
-  border-color: #ff9900;
-}
-
-.streaming-button.tidal {
-  border-color: rgba(0, 255, 255, 0.3);
-}
-.streaming-button.tidal:hover {
-  background-color: rgba(0, 255, 255, 0.15);
-  border-color: #00ffff;
-}
-
-.streaming-button.youtube {
-  border-color: rgba(255, 0, 0, 0.4);
-}
-.streaming-button.youtube:hover {
-  background-color: rgba(255, 0, 0, 0.2);
-  border-color: #ff0000;
-}
-
-.dot-indicator {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 9999px;
-}
-
-/* Container das estrelas com cores baseadas no nível da nota */
-.star-rating-container {
-  display: flex;
-  gap: 0.375rem;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
-  flex-wrap: wrap;
-}
-
-.star-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: #3f3f46;
-  transition: all 0.15s ease;
-}
-
-/* Cores progressivas das estrelas ativas de 1 a 10 */
-.star-icon.active[data-star="1"], .star-icon.active[data-star="2"] { color: #ef4444; fill: #ef4444; } /* Vermelho - Ruim */
-.star-icon.active[data-star="3"], .star-icon.active[data-star="4"] { color: #f97316; fill: #f97316; } /* Laranja - Mediano */
-.star-icon.active[data-star="5"], .star-icon.active[data-star="6"] { color: #eab308; fill: #eab308; } /* Amarelo - Ok */
-.star-icon.active[data-star="7"], .star-icon.active[data-star="8"] { color: #84cc16; fill: #84cc16; } /* Verde claro - Bom */
-.star-icon.active[data-star="9"], .star-icon.active[data-star="10"] { color: #10b981; fill: #10b981; filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.6)); } /* Verde esmeralda - Perfeito */
-
-/* Estilo do selo/frase Gen Z */
-.gen-z-review-badge {
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0.35rem 0.75rem;
-  border-radius: 9999px;
-  background-color: rgba(24, 24, 27, 0.9);
-  border: 1px solid rgba(63, 63, 70, 0.5);
-  display: inline-block;
-  margin-bottom: 1rem;
-  transition: all 0.2s ease;
 }
