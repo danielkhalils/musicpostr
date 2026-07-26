@@ -1,0 +1,189 @@
+.artist-detail-container {
+  min-height: calc(100vh - 4rem);
+  background-color: #09090b; /* zinc-950 */
+  color: #ffffff;
+  padding-bottom: 4rem;
+  margin-top: -4rem;
+}
+
+.artist-banner-wrapper {
+  position: relative;
+  width: 100%;
+  height: 20rem; /* Altura padrão equilibrada */
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .artist-banner-wrapper {
+    height: 26rem; /* Altura maior em telas grandes */
+  }
+}
+
+.artist-banner-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 30%; /* Foca na parte superior/central da foto do artista */
+  filter: blur(8px); /* Deixa o fundo desfocado estilo player moderno */
+  transform: scale(1.1); /* Evita bordas brancas do blur */
+  opacity: 0.65;
+}
+
+.artist-banner-fallback {
+  position: absolute;
+  inset: 0;
+  background-color: #18181b;
+  opacity: 0.6;
+}
+
+/* Gradiente mais suave cobrindo todo o rodapé do banner para mesclar com o fundo */
+.artist-banner-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(9, 9, 11, 0.2) 0%,
+    rgba(9, 9, 11, 0.5) 60%,
+    #09090b 100%
+  );
+  pointer-events: none;
+}
+
+.artist-banner-content {
+  position: relative;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  height: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-top: 6rem;
+  padding-bottom: 2rem;
+}
+
+@media (min-width: 640px) {
+  .artist-banner-content {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+.artist-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #d4d4d8;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  width: fit-content;
+  backdrop-filter: blur(12px);
+  transition: color 0.2s;
+}
+
+.artist-back-button:hover {
+  color: #ffffff;
+}
+
+.artist-main-content {
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+@media (min-width: 640px) {
+  .artist-main-content {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+.section-title {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.releases-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .releases-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .releases-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .releases-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.release-card {
+  background-color: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(39, 39, 42, 0.8);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.release-card:hover {
+  border-color: rgba(82, 82, 91, 1);
+}
+
+.release-cover-box {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #27272a;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #52525b;
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+}
+
+.release-tag {
+  margin-top: 1rem;
+  display: inline-block;
+  font-size: 0.625rem;
+  line-height: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: #27272a;
+  color: #d4d4d8;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  width: fit-content;
+}
