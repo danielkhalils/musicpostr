@@ -69,7 +69,8 @@ export function ReviewsPage() {
         const data = await response.json();
 
         if (data && data.data) {
-          setTotalResults(data.total || 50);
+          // Utilizando o totalResults recebido da API com fallback seguro
+          setTotalResults(typeof data.total === 'number' ? data.total : (data.data.length || 0));
 
           const detailedAlbumsPromises = data.data.map(async (item: any, idx: number) => {
             const uniqueIndex = index + idx;
@@ -119,9 +120,12 @@ export function ReviewsPage() {
           setAlbums(resolvedAlbums);
         } else {
           setAlbums([]);
+          setTotalResults(0);
         }
       } catch (error) {
         console.error('Erro ao buscar álbuns:', error);
+        setAlbums([]);
+        setTotalResults(0);
       } finally {
         setIsLoading(false);
       }
@@ -154,7 +158,8 @@ export function ReviewsPage() {
             <Award className="h-8 w-8 text-white stroke-[2.5]" /> Avaliações da Comunidade
           </h1>
           <p className="page-subtitle">
-            Explore álbuns, utilize os filtros por ano, gênero e gravadora para refinar suas descobertas.
+            Explore álbuns, utilize os filtros por ano, gênero e gravadora para refinar suas descobertas. 
+            {totalResults > 0 && <span className="ml-2 text-xs text-zinc-500">({totalResults} resultados encontrados)</span>}
           </p>
         </div>
 
