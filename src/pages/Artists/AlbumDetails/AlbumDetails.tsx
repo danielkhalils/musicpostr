@@ -70,9 +70,8 @@ export function AlbumDetails() {
     async function fetchAlbumDetails() {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `https://corsproxy.io/?` + encodeURIComponent(`https://api.deezer.com/album/${id}`)
-        );
+        // Utilizando a rota interna configurada no Vercel para evitar bloqueio de CORS em produção
+        const response = await fetch(`/api/deezer/album/${id}`);
         const data = await response.json();
         if (data && data.id) {
           setAlbum(data);
@@ -208,10 +207,6 @@ export function AlbumDetails() {
                     <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.521 17.34c-.24.359-.72.48-1.08.24-2.999-1.8-6.78-2.22-11.22-1.2-.42.12-.84-.18-.96-.6-.12-.42.18-.84.601-.96 4.801-1.14 9.001-.66 12.36 1.38.36.24.48.72.3 1.08zm1.44-3.84c-.3.48-.9.66-1.38.36-3.42-2.1-8.58-2.7-12.6-1.47-.54.18-1.14-.12-1.32-.66-.18-.54.12-1.14.66-1.32 4.62-1.38 10.32-.72 14.34 1.68.48.3.66.9.3 1.35zm.12-4.08C14.88 7.26 8.64 7.08 5.04 8.16c-.66.18-1.38-.18-1.56-.84-.18-.66.18-1.38.84-1.56 4.2-1.26 11.22-1.08 15.66 1.62.6.36.78 1.14.42 1.74-.36.6-1.14.78-1.74.42z"/></svg>
                     Spotify
                   </a>
-                  {/* <a href={`https://music.amazon.com/search/${encodeURIComponent(`${album.title} ${artistName}`)}`} target="_blank" rel="noopener noreferrer" className="streaming-button amazon">
-                    <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#ff9900"><path d="M15.93 15.65c-1.76 1.34-4.32 2.05-6.84 2.05-3.26 0-6.34-1.18-8.68-3.32-.23-.21-.04-.57.27-.47 3.23 1.03 6.74.88 9.87-.43 1.53-.64 2.9-1.51 4.06-2.57.26-.24.64.01.48.33-1.12 2.3-2.73 4.23-4.86 5.64zm7.04-3.8c-.21-.12-.46-.02-.58.19-1.04 1.83-2.61 3.42-4.57 4.57-.27.16-.62-.05-.53-.36.65-2.24.49-4.71-.46-6.83-.98-2.17-2.63-3.95-4.76-5.1-2.22-1.21-4.77-1.76-7.38-1.57-.31.02-.49-.31-.3-.55 3.25-4.14 9.17-4.73 13.06-1.34 2.54 2.22 3.96 5.37 5.52 8.41.14.28-.05.61-.37.6z"/></svg>
-                    Amazon Music
-                  </a> */}
                   <a href={`https://tidal.com/search?q=${encodeURIComponent(`${album.title} ${artistName}`)}`} target="_blank" rel="noopener noreferrer" className="streaming-button tidal">
                     <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#00ffff"><path d="M12 3.86L8.14 7.71 4.29 3.86 8.14 0 12 3.86zm7.71 7.71L15.86 15.43 12 11.57l3.86-3.86 3.85 3.86zm-7.71 7.72l-3.86-3.86 3.86-3.86 3.86 3.86-3.86 3.86zm7.71-7.72l-3.86-3.86-3.85 3.85 3.85 3.86 3.86-3.85z"/></svg>
                     Tidal
@@ -231,7 +226,7 @@ export function AlbumDetails() {
         </div>
       </div>
 
-      {/* Bloco Principal Inferior (Seguindo exatamente as mesmas colunas do topo) */}
+      {/* Bloco Principal Inferior */}
       <div className="album-main-layout">
         
         {/* Esquerda da Base (Rate + Músicas) */}
@@ -298,7 +293,7 @@ export function AlbumDetails() {
           )}
         </div>
 
-        {/* Direita da Base (Community Feed - Largura expandida alinhada com o bloco da direita superior) */}
+        {/* Direita da Base (Community Feed) */}
         <div className="sidebar-section">
           <div className="community-feed-card">
             <h3 className="community-feed-title">Community Feed</h3>
