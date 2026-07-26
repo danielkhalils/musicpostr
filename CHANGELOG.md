@@ -10,6 +10,7 @@ e esse projeto adere ao Semver [Versionamento Semântico](https://semver.org/spe
 ### Adicionado (Added)
 - **0001** - Commit Inicial
 - **0002** - Integrando API `MusicBrainz` e `Deezer` para imagens.
+- **0003** - Implementando telas de ranking, reviews e artistas e álbuns.
 
 ### Alterado (Changed)
 - 

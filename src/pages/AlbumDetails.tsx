@@ -1,1 +1,0 @@
-//Onde você receberá o id via useParams() do React Router para buscar os detalhes do álbum.
