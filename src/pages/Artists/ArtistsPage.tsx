@@ -37,11 +37,9 @@ export function ArtistsPage() {
         const query = searchQuery.trim() === "" ? "pop" : searchQuery;
         const index = (page - 1) * ITEMS_PER_PAGE;
 
+        // Utilizando a rota interna configurada no Vercel para evitar bloqueio de CORS em produção
         const response = await fetch(
-          `https://corsproxy.io/?` +
-            encodeURIComponent(
-              `https://api.deezer.com/search/artist?q=${encodeURIComponent(query)}&index=${index}&limit=${ITEMS_PER_PAGE}`
-            ),
+          `/api/deezer/search/artist?q=${encodeURIComponent(query)}&index=${index}&limit=${ITEMS_PER_PAGE}`
         );
         const data = await response.json();
 
