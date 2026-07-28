@@ -1,0 +1,23 @@
+.my-review-card {
+  background-color: rgba(24, 24, 27, 0.7);
+  border: 1px solid rgba(39, 39, 42, 0.8);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s;
+}
+
+.my-review-card:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.my-review-thumb {
+  width: 5rem;
+  height: 5rem;
+  min-width: 5rem;
+  min-height: 5rem;
+  border-radius: 0.75rem;
+  object-fit: cover;
+  background-color: #27272a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
