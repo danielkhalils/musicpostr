@@ -1,0 +1,152 @@
+/* --- Capa de Fundo --- */
+.profile-banner-container {
+  width: 100%;
+  height: 16rem;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  position: relative;
+  background-color: #18181b;
+  border: 1px solid rgba(63, 63, 70, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.profile-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-banner-fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #27272a 0%, #09090b 100%);
+}
+
+/* --- Card Principal com Sobreposição --- */
+.profile-header-card {
+  background-color: rgba(24, 24, 27, 0.92);
+  border: 1px solid rgba(63, 63, 70, 0.5);
+  border-radius: 1.25rem;
+  padding: 2.25rem;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
+  margin: -4rem 1.5rem 0 1.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+@media (min-width: 768px) {
+  .profile-header-card {
+    margin: -4rem 3rem 0 3rem;
+  }
+}
+
+/* --- Topo Interno (Avatar + Botão) --- */
+.profile-top-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: -4.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* --- Avatar do Usuário com Borda Colorida --- */
+.profile-avatar-container {
+  position: relative;
+  width: 7rem;
+  height: 7rem;
+  min-width: 7rem;
+  min-height: 7rem;
+  border-radius: 9999px;
+  border: 4px solid #18181b;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.35);
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  padding: 2px;
+}
+
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  object-fit: cover;
+}
+
+.profile-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #27272a;
+}
+
+.profile-camera-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background-color: #3b82f6;
+  border: 2px solid #18181b;
+  padding: 0.35rem;
+  border-radius: 9999px;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+}
+
+/* --- Grid de Conteúdo --- */
+.profile-content-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 900px) {
+  .profile-content-grid {
+    grid-template-columns: 1.3fr 1fr;
+    align-items: center;
+  }
+}
+
+.profile-stats-panel {
+  display: flex;
+  justify-content: flex-start;
+}
+
+@media (min-width: 900px) {
+  .profile-stats-panel {
+    justify-content: flex-end;
+  }
+}
+
+/* --- Painel de Estatísticas Mais Colorido e Vibrante --- */
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+  background: linear-gradient(145deg, rgba(24, 24, 27, 0.95), rgba(9, 9, 11, 0.9));
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 1.25rem 1.5rem;
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 25rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.profile-stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #f4f4f5;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #d4d4d8; /* Clareado para dar mais legibilidade */
+  margin-top: 0.15rem;
+}
