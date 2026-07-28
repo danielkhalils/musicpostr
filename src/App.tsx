@@ -6,6 +6,9 @@ import HomePage from "./pages/Home/HomePage";
 import { AlbumDetails } from "./pages/Artists/AlbumDetails/AlbumDetails";
 import { ReviewsPage } from "./pages/Reviews/ReviewsPage";
 import { RankingsPage } from "./pages/Ranking/RankingsPage";
+import { ProfilePage } from "./pages/Profile/ProfilePage";
+import { MyReviewsPage } from "./pages/Profile/MyReviewsPage";
+import { SettingsPage } from "./pages/Profile/SettingsPage";
 
 function App() {
   return (
@@ -21,6 +24,9 @@ function App() {
             <Route path="/album/:id" element={<AlbumDetails />} />
             <Route path="/reviews" element={<ReviewsPage />} />
             <Route path="/rankings" element={<RankingsPage />} />
+            <Route path="/perfil" element={<ProfilePage />} />
+            <Route path="/minhas-avaliacoes" element={<MyReviewsPage />} />
+            <Route path="/configuracoes" element={<SettingsPage />} />
           </Routes>
         </main>
       </div>

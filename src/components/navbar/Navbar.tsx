@@ -3,6 +3,7 @@ import { Menu, Search, Music, User } from 'lucide-react';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
+import { Link } from 'react-router-dom';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,10 +42,21 @@ export function Navbar() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 text-zinc-200">
-              <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white cursor-pointer">Meu Perfil</DropdownMenuItem>
-              <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white cursor-pointer">Minhas Avaliações</DropdownMenuItem>
-              <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white cursor-pointer">Configurações</DropdownMenuItem>
-              <DropdownMenuItem className="text-red-400 focus:bg-red-950/50 focus:text-red-300 cursor-pointer">Sair</DropdownMenuItem>
+<DropdownMenuItem asChild className="focus:bg-zinc-800 focus:text-white cursor-pointer">
+          <Link to="/perfil" className="w-full">Meu Perfil</Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild className="focus:bg-zinc-800 focus:text-white cursor-pointer">
+          <Link to="/minhas-avaliacoes" className="w-full">Minhas Avaliações</Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild className="focus:bg-zinc-800 focus:text-white cursor-pointer">
+          <Link to="/configuracoes" className="w-full">Configurações</Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem className="text-red-400 focus:bg-red-950/50 focus:text-red-300 cursor-pointer">
+          Sair
+        </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
