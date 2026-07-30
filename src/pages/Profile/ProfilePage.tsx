@@ -150,7 +150,7 @@ export function ProfilePage() {
   };
 
   // Rotas dinâmicas suportando perfil pessoal ou de amigo visitado
-  const routePrefix = isVisiting ? `/perfil/${username}` : '';
+  //const routePrefix = isVisiting ? `/perfil/${username}` : '';
 
   return (
     <div className="page-container pb-12">
