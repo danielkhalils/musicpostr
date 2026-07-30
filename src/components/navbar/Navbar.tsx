@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, Search, Music, User } from 'lucide-react';
+import { Menu, Music, User } from 'lucide-react';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
