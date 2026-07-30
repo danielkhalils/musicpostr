@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Award, ArrowLeft, Check, Mic } from 'lucide-react';
+import { Award, ArrowLeft } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 
