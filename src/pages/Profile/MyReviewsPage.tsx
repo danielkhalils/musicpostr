@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Trash2, Music } from 'lucide-react';
+import { Star, Trash2, Music, ArrowLeft } from 'lucide-react';
 import './MyReviewsPage.css';
 
 interface UserReview {
@@ -40,8 +40,11 @@ export function MyReviewsPage() {
   };
 
   return (
-    <div className="page-container">
+    <div className="page-container pb-12">
       <div className="page-header-wrapper">
+        <Link to="/perfil" className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 mb-3 transition-colors">
+          <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Perfil
+        </Link>
         <h1 className="page-title text-white">
           <Star className="h-8 w-8 text-primary fill-primary" /> Minhas Avaliações
         </h1>
