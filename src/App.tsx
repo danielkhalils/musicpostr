@@ -9,6 +9,10 @@ import { RankingsPage } from "./pages/Ranking/RankingsPage";
 import { ProfilePage } from "./pages/Profile/ProfilePage";
 import { MyReviewsPage } from "./pages/Profile/MyReviewsPage";
 import { SettingsPage } from "./pages/Profile/SettingsPage";
+import { FavoritesPage } from "./pages/Profile/FavoritesPage";
+import { FriendsPage } from "./pages/Profile/FriendsPage";
+import { IdolsPage } from "./pages/Profile/IdolsPage";
+import { ListsPage } from "./pages/Profile/ListsPage";
 
 function App() {
   return (
@@ -27,6 +31,12 @@ function App() {
             <Route path="/perfil" element={<ProfilePage />} />
             <Route path="/minhas-avaliacoes" element={<MyReviewsPage />} />
             <Route path="/configuracoes" element={<SettingsPage />} />
+            <Route path="/perfil" element={<ProfilePage />} />
+            <Route path="/perfil/:username" element={<ProfilePage />} />{" "}
+            <Route path="/favoritos" element={<FavoritesPage />} />
+            <Route path="/amigos" element={<FriendsPage />} />
+            <Route path="/idolos" element={<IdolsPage />} />
+            <Route path="/listas" element={<ListsPage />} />
           </Routes>
         </main>
       </div>
