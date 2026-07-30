@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, ArrowLeft, UserCheck, MessageSquare } from 'lucide-react';
+import { Users, ArrowLeft } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 
