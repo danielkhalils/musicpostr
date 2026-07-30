@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Music,
+  Award,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import "./ArtistsPage.css";
@@ -24,11 +25,48 @@ export function ArtistsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
 
+  // Estado para armazenar os IDs dos artistas seguidos (Ídolos) sincronizados com o localStorage
+  const [followedIds, setFollowedIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("musicpostr_idols");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const ITEMS_PER_PAGE = 18;
 
   useEffect(() => {
     setPage(1);
   }, [searchQuery]);
+
+  // Salvar ídolos no localStorage sempre que houver alteração
+  useEffect(() => {
+    try {
+      localStorage.setItem("musicpostr_idols", JSON.stringify(followedIds));
+    } catch (e) {
+      console.error("Erro ao salvar ídolos:", e);
+    }
+  }, [followedIds]);
+
+  const toggleFollow = (artist: Artist, e: React.MouseEvent) => {
+    e.preventDefault(); // Evita que o clique navegue para a página do artista ao clicar no botão
+    setFollowedIds((prev) => {
+      const isFollowing = prev.includes(artist.id);
+      if (isFollowing) {
+        return prev.filter((id) => id !== artist.id);
+      } else {
+        // Opcional: Salvar os dados completos do artista no localStorage para a página de Ídolos renderizar se necessário
+        const currentIdolsData = JSON.parse(localStorage.getItem("musicpostr_idols_data") || "[]");
+        if (!currentIdolsData.some((a: any) => a.id === artist.id)) {
+          currentIdolsData.push(artist);
+          localStorage.setItem("musicpostr_idols_data", JSON.stringify(currentIdolsData));
+        }
+        return [...prev, artist.id];
+      }
+    });
+  };
 
   useEffect(() => {
     async function fetchDeezerArtists() {
@@ -37,7 +75,6 @@ export function ArtistsPage() {
         const query = searchQuery.trim() === "" ? "pop" : searchQuery;
         const index = (page - 1) * ITEMS_PER_PAGE;
 
-        // Utilizando a rota interna configurada no Vercel para evitar bloqueio de CORS em produção
         const response = await fetch(
           `/api/deezer/search/artist?q=${encodeURIComponent(query)}&index=${index}&limit=${ITEMS_PER_PAGE}`
         );
@@ -139,33 +176,59 @@ export function ArtistsPage() {
           </div>
         ) : (
           <div className="artists-grid">
-            {artists.map((artist) => (
-              <Link
-                key={artist.id}
-                to={`/artista/${artist.id}`}
-                className="artist-card group"
-              >
-                <div className="artist-avatar-wrapper">
-                  {artist.imageUrl ? (
-                    <img
-                      src={artist.imageUrl}
-                      alt={artist.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Music className="h-10 w-10 text-zinc-600" />
-                  )}
+            {artists.map((artist) => {
+              const isFollowing = followedIds.includes(artist.id);
+
+              return (
+                <div
+                  key={artist.id}
+                  className="artist-card-wrapper relative group"
+                >
+                  <Link
+                    to={`/artista/${artist.id}`}
+                    className="artist-card flex flex-col items-center"
+                  >
+                    <div className="artist-avatar-wrapper">
+                      {artist.imageUrl ? (
+                        <img
+                          src={artist.imageUrl}
+                          alt={artist.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Music className="h-10 w-10 text-zinc-600" />
+                      )}
+                    </div>
+
+                    <span className="artist-name text-center">
+                      {artist.name}
+                    </span>
+
+                    <span className="artist-fans">
+                      {artist.nbFans ? `${artist.nbFans.toLocaleString()} fãs` : "Artista"}
+                    </span>
+                  </Link>
+
+                  {/* Botão de Seguir / Ídolo Flutuante no Card */}
+                  <div className="absolute top-3 right-3 z-10">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => toggleFollow(artist, e)}
+                      className={`h-8 px-3 rounded-full text-xs font-semibold shadow-md transition-all gap-1 ${
+                        isFollowing
+                          ? "bg-primary text-white border-primary hover:bg-primary/80"
+                          : "bg-zinc-900/90 text-zinc-200 border-zinc-700 hover:bg-zinc-800 hover:text-white"
+                      }`}
+                      title={isFollowing ? "Deixar de seguir" : "Seguir como ídolo"}
+                    >
+                      <Award className={`h-3.5 w-3.5 ${isFollowing ? "fill-white" : ""}`} />
+                      {isFollowing ? "Seguindo" : "Seguir"}
+                    </Button>
+                  </div>
                 </div>
-
-                <span className="artist-name">
-                  {artist.name}
-                </span>
-
-                <span className="artist-fans">
-                  {artist.nbFans ? `${artist.nbFans.toLocaleString()} fãs` : "Artista"}
-                </span>
-              </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

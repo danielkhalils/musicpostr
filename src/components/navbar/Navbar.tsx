@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Menu, Search, Music, User } from 'lucide-react';
+import { Menu, Music, User } from 'lucide-react';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import { Link } from 'react-router-dom';
+import { GlobalSearch } from '../Search/GlobalSearch';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,10 +31,8 @@ export function Navbar() {
 
         {/* Ações da Direita (Busca e Perfil) */}
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="hidden sm:flex text-zinc-300 hover:text-white hover:bg-zinc-800">
-            <Search className="h-5 w-5" />
-          </Button>
-
+          <GlobalSearch />
+          
           {/* Menu Dropdown do Perfil */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
