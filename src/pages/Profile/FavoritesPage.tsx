@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Heart, Disc, Music, ArrowLeft } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
