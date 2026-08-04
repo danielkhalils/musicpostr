@@ -1,8 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Disc, Music as MusicIcon, Radio, ChevronDown } from 'lucide-react';
-import './ArtistDetail.css';
-import { Button } from '../../../components/ui/button';
+import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import {
+  ArrowLeft,
+  Loader2,
+  Disc,
+  Music as MusicIcon,
+  Radio,
+  ChevronDown,
+} from "lucide-react";
+import "./ArtistDetail.css";
+import { Button } from "../../../components/ui/button";
 
 interface DeezerAlbum {
   id: number;
@@ -15,8 +22,8 @@ interface DeezerAlbum {
 
 export function ArtistDetail() {
   const { id } = useParams<{ id: string }>();
-  const [artistName, setArtistName] = useState('');
-  const [artistBanner, setArtistBanner] = useState('');
+  const [artistName, setArtistName] = useState("");
+  const [artistBanner, setArtistBanner] = useState("");
   const [albums, setAlbums] = useState<DeezerAlbum[]>([]);
   const [epsAndSingles, setEpsAndSingles] = useState<DeezerAlbum[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,38 +38,45 @@ export function ArtistDetail() {
       setVisibleEpsCount(10);
 
       try {
-        // Utilizando a rota interna configurada no Vercel para evitar bloqueio de CORS em produção
         const artistRes = await fetch(`/api/deezer/artist/${id}`);
         const artistData = await artistRes.json();
 
         if (artistData && artistData.name) {
           setArtistName(artistData.name);
           setArtistBanner(
-            artistData.picture_xl || artistData.picture_big || artistData.picture_medium || ''
+            artistData.picture_xl ||
+              artistData.picture_big ||
+              artistData.picture_medium ||
+              "",
           );
         }
 
-        const albumsRes = await fetch(`/api/deezer/artist/${id}/albums?limit=100`);
+        const albumsRes = await fetch(
+          `/api/deezer/artist/${id}/albums?limit=100`,
+        );
         const albumsData = await albumsRes.json();
 
         if (albumsData && albumsData.data) {
           const uniqueReleases = Array.from(
-            new Map(albumsData.data.map((item: any) => [item.title, item])).values()
+            new Map(
+              albumsData.data.map((item: any) => [item.title, item]),
+            ).values(),
           ) as DeezerAlbum[];
 
           const studioAlbums = uniqueReleases.filter(
-            (item) => !item.record_type || item.record_type === 'album'
+            (item) => !item.record_type || item.record_type === "album",
           );
-          
+
           const otherReleases = uniqueReleases.filter(
-            (item) => item.record_type === 'ep' || item.record_type === 'single'
+            (item) =>
+              item.record_type === "ep" || item.record_type === "single",
           );
 
           setAlbums(studioAlbums);
           setEpsAndSingles(otherReleases);
         }
       } catch (error) {
-        console.error('Erro ao carregar detalhes do artista no Deezer:', error);
+        console.error("Erro ao carregar detalhes do artista no Deezer:", error);
       } finally {
         setIsLoading(false);
       }
@@ -75,7 +89,7 @@ export function ArtistDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-zinc-950">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -86,11 +100,10 @@ export function ArtistDetail() {
 
   return (
     <div className="artist-detail-container">
-      
       {/* Banner no Topo */}
       <div className="artist-banner-wrapper">
         {artistBanner ? (
-          <div 
+          <div
             className="artist-banner-bg"
             style={{ backgroundImage: `url(${artistBanner})` }}
           />
@@ -106,10 +119,11 @@ export function ArtistDetail() {
           </Link>
 
           <div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight drop-shadow-md">
-              {artistName || 'Detalhes do Artista'}
+            <h1 className="text-4xl md:text-6xl font-black tracking-tight drop-shadow-md text-zinc-900 dark:text-white">
+              {artistName || "Detalhes do Artista"}
             </h1>
-            <p className="text-zinc-300 mt-2 text-sm md:text-base drop-shadow">
+            {/* Subtítulo corrigido com variável adaptativa para alto contraste em ambos os modos */}
+            <p className="text-muted-foreground dark:text-zinc-300 mt-2 text-sm md:text-base drop-shadow font-medium">
               Discografia, álbuns e lançamentos oficiais
             </p>
           </div>
@@ -117,7 +131,6 @@ export function ArtistDetail() {
       </div>
 
       <div className="artist-main-content">
-        
         {/* Seção de Álbuns */}
         {albums.length > 0 && (
           <div>
@@ -130,25 +143,32 @@ export function ArtistDetail() {
                 const coverUrl = album.cover_big || album.cover_medium;
 
                 return (
-                  <Link 
-                    key={album.id} 
+                  <Link
+                    key={album.id}
                     to={`/album/${album.id}`}
                     className="release-card group cursor-pointer"
                   >
                     <div>
                       <div className="release-cover-box">
                         {coverUrl ? (
-                          <img src={coverUrl} alt={album.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          <img
+                            src={coverUrl}
+                            alt={album.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
                         ) : (
-                          <MusicIcon className="h-10 w-10 text-zinc-600" />
+                          <MusicIcon className="h-10 w-10 text-muted-foreground" />
                         )}
                       </div>
-                      <h3 className="font-medium text-white text-sm line-clamp-1 group-hover:text-primary transition-colors">{album.title}</h3>
-                      <p className="text-xs text-zinc-500 mt-1">{album.release_date?.substring(0, 4) || 'Ano desconhecido'}</p>
+                      <h3 className="font-medium text-[var(--foreground)] text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                        {album.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {album.release_date?.substring(0, 4) ||
+                          "Ano desconhecido"}
+                      </p>
                     </div>
-                    <span className="release-tag">
-                      Álbum
-                    </span>
+                    <span className="release-tag">Álbum</span>
                   </Link>
                 );
               })}
@@ -158,8 +178,8 @@ export function ArtistDetail() {
               <div className="flex justify-center mt-8">
                 <Button
                   variant="outline"
-                  onClick={() => setVisibleAlbumsCount(prev => prev + 10)}
-                  className="bg-zinc-900 border-zinc-800 text-zinc-200 hover:bg-zinc-800 hover:text-white rounded-full px-6"
+                  onClick={() => setVisibleAlbumsCount((prev) => prev + 10)}
+                  className="bg-card border-border text-foreground hover:bg-muted rounded-full px-6 shadow-sm"
                 >
                   Ver mais álbuns <ChevronDown className="h-4 w-4 ml-1" />
                 </Button>
@@ -180,24 +200,35 @@ export function ArtistDetail() {
                 const coverUrl = item.cover_big || item.cover_medium;
 
                 return (
-                  <Link 
-                    key={item.id} 
+                  <Link
+                    key={item.id}
                     to={`/album/${item.id}`}
                     className="release-card group cursor-pointer"
                   >
                     <div>
                       <div className="release-cover-box">
                         {coverUrl ? (
-                          <img src={coverUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          <img
+                            src={coverUrl}
+                            alt={item.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
                         ) : (
-                          <MusicIcon className="h-10 w-10 text-zinc-600" />
+                          <MusicIcon className="h-10 w-10 text-muted-foreground" />
                         )}
                       </div>
-                      <h3 className="font-medium text-white text-sm line-clamp-1 group-hover:text-primary transition-colors">{item.title}</h3>
-                      <p className="text-xs text-zinc-500 mt-1">{item.release_date?.substring(0, 4) || 'Ano desconhecido'}</p>
+                      <h3 className="font-medium text-[var(--foreground)] text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {item.release_date?.substring(0, 4) ||
+                          "Ano desconhecido"}
+                      </p>
                     </div>
                     <span className="release-tag">
-                      {item.record_type ? item.record_type.toUpperCase() : 'Single'}
+                      {item.record_type
+                        ? item.record_type.toUpperCase()
+                        : "Single"}
                     </span>
                   </Link>
                 );
@@ -208,16 +239,16 @@ export function ArtistDetail() {
               <div className="flex justify-center mt-8">
                 <Button
                   variant="outline"
-                  onClick={() => setVisibleEpsCount(prev => prev + 10)}
-                  className="bg-zinc-900 border-zinc-800 text-zinc-200 hover:bg-zinc-800 hover:text-white rounded-full px-6"
+                  onClick={() => setVisibleEpsCount((prev) => prev + 10)}
+                  className="bg-card border-border text-foreground hover:bg-muted rounded-full px-6 shadow-sm"
                 >
-                  Ver mais EPs e Singles <ChevronDown className="h-4 w-4 ml-1" />
+                  Ver mais EPs e Singles{" "}
+                  <ChevronDown className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             )}
           </div>
         )}
-
       </div>
     </div>
   );

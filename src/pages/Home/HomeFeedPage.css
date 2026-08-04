@@ -1,0 +1,40 @@
+.feed-header {
+  border-bottom: 1px solid rgba(63, 63, 70, 0.4);
+  padding-bottom: 1.25rem;
+}
+
+.feed-card {
+  background-color: rgba(24, 24, 27, 0.92);
+  border: 1px solid rgba(63, 63, 70, 0.45);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6);
+  transition: all 0.25s ease;
+}
+
+.feed-card:hover {
+  border-color: rgba(113, 113, 122, 0.6);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+}
+
+.feed-album-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  background-color: rgba(15, 15, 18, 0.75);
+  border: 1px solid rgba(63, 63, 70, 0.4);
+  padding: 1.15rem;
+  border-radius: 1rem;
+}
+
+.feed-album-cover {
+  width: 5.5rem;
+  height: 5.5rem;
+  min-width: 5.5rem;
+  min-height: 5.5rem;
+  border-radius: 0.85rem;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
