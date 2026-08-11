@@ -1,0 +1,66 @@
+.idols-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .idols-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .idols-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .idols-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.idol-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.idol-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+}
+
+.idol-avatar-wrapper {
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  border: 2px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: var(--muted);
+  flex-shrink: 0;
+}
+
+.idol-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.idol-card:hover .idol-avatar-img {
+  transform: scale(1.08);
+}

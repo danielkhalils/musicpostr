@@ -86,7 +86,7 @@ export function ProfilePage() {
         );
       case 'threads':
         return (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#ffffff">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
             <path d="M17.824 11.196c-.161-.016-.323-.024-.486-.024-2.176 0-3.864.88-4.704 2.508-.66-1.04-1.74-1.644-3.156-1.644-2.628 0-4.488 2.052-4.488 4.908 0 2.892 1.872 4.92 4.548 4.92 2.028 0 3.528-1.032 4.236-2.916.444 1.86 1.836 2.856 3.828 2.856 3.252 0 5.316-2.28 5.316-6.132 0-3.876-2.124-6.12-5.088-6.12zm-8.088 5.7c0-1.62 1.056-2.784 2.544-2.784 1.344 0 2.232 1.056 2.232 2.748 0 1.644-.912 2.748-2.232 2.748-1.488 0-2.544-1.128-2.544-2.712zm8.016.924c0 2.232-1.152 3.672-3.036 3.672-1.464 0-2.508-.912-2.784-2.316.54-.156 1.104-.24 1.68-.24 2.376 0 3.42 1.2 4.14-.116z"/>
           </svg>
         );
@@ -104,7 +104,7 @@ export function ProfilePage() {
         );
       case 'twitter':
         return (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#ffffff">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
           </svg>
         );
@@ -149,9 +149,6 @@ export function ProfilePage() {
     return string === 'website' ? 'Site Pessoal' : string.charAt(0).toUpperCase() + string.slice(1);
   };
 
-  // Rotas dinâmicas suportando perfil pessoal ou de amigo visitado
-  //const routePrefix = isVisiting ? `/perfil/${username}` : '';
-
   return (
     <div className="page-container pb-12">
       {/* Capa de Fundo do Perfil */}
@@ -172,7 +169,7 @@ export function ProfilePage() {
               <img src={userProfile.avatarUrl} alt={userProfile.name} className="profile-avatar-img" />
             ) : (
               <div className="profile-avatar-fallback">
-                <User className="h-14 w-14 text-zinc-400" />
+                <User className="h-14 w-14 text-muted-foreground" />
               </div>
             )}
             <div className="profile-camera-badge">
@@ -184,18 +181,18 @@ export function ProfilePage() {
             <Button
               variant="outline"
               onClick={handleShareProfile}
-              className="border-zinc-700 bg-zinc-900/90 text-zinc-200 hover:bg-zinc-800 rounded-full text-xs h-9 px-3.5 transition-all flex items-center gap-1.5"
+              className="border-border bg-card text-foreground hover:bg-muted rounded-full text-xs h-9 px-3.5 transition-all flex items-center gap-1.5 shadow-sm"
               title="Compartilhar perfil"
             >
               {copied ? (
                 <>
-                  <Check className="h-3.5 w-3.5 text-emerald-400" />
-                  <span className="text-emerald-400 font-medium">Link copiado!</span>
+                  <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  <span className="text-emerald-500 font-medium">Link copiado!</span>
                 </>
               ) : (
                 <>
                   <Share2 className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Compartilhar</span>
+                  <span className="hidden sm:inline">Compartilhar Perfil </span>
                 </>
               )}
             </Button>
@@ -204,7 +201,7 @@ export function ProfilePage() {
               <Link to="/configuracoes">
                 <Button 
                   variant="outline" 
-                  className="border-zinc-700 bg-zinc-900/90 text-zinc-200 hover:bg-zinc-800 rounded-full text-xs h-9 px-4 transition-all"
+                  className="border-border bg-card text-foreground hover:bg-muted rounded-full text-xs h-9 px-4 transition-all shadow-sm"
                 >
                   <Edit3 className="h-3.5 w-3.5 mr-1.5" /> Editar Perfil nas Configurações
                 </Button>
@@ -219,13 +216,13 @@ export function ProfilePage() {
           {/* Esquerda: Identidade e Bio */}
           <div className="profile-identity-section">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{userProfile.name}</h1>
-              <p className="text-xs text-zinc-400 flex items-center gap-1.5 mt-1 font-medium">
-                <span className="text-primary font-semibold">@{userProfile.username}</span> • <Mail className="h-3 w-3 ml-0.5 text-zinc-500" /> {userProfile.email}
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">{userProfile.name}</h1>
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1 font-medium">
+                <span className="text-primary font-semibold">@{userProfile.username}</span> • <Mail className="h-3 w-3 ml-0.5 text-muted-foreground" /> {userProfile.email}
               </p>
             </div>
 
-            <p className="text-sm text-zinc-300 mt-3 leading-relaxed max-w-xl">
+            <p className="text-sm text-foreground/80 mt-3 leading-relaxed max-w-xl">
               {userProfile.bio}
             </p>
 
@@ -241,7 +238,7 @@ export function ProfilePage() {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800/80 rounded-xl text-zinc-300 hover:text-white hover:border-zinc-700 transition-all flex items-center justify-center group shadow-sm"
+                      className="p-2 bg-card hover:bg-muted border border-border rounded-xl text-foreground hover:text-primary transition-all flex items-center justify-center group shadow-sm"
                       title={formattedName}
                     >
                       {renderSocialIcon(key)}
@@ -252,14 +249,14 @@ export function ProfilePage() {
             )}
           </div>
 
-          {/* Direita: Painel Moderno de Estatísticas (Com Links Funcionais) */}
+          {/* Direita: Painel Moderno de Estatísticas */}
           <div className="profile-stats-panel">
             <div className="profile-stats-container">
               
               <Link to={isVisiting ? `/perfil/${username}/avaliacoes` : '/minhas-avaliacoes'} className="profile-stat-card primary-stat block">
                 <div className="flex items-center justify-between mb-1">
                   <span className="stat-label">Avaliações</span>
-                  <Star className="h-4 w-4 text-primary fill-primary/20" />
+                  <Star className="h-4 w-4 text-primary fill-primary/25" />
                 </div>
                 <span className="stat-number">{userProfile.stats.reviews}</span>
                 <span className="stat-subtext">Discos avaliados</span>
@@ -268,7 +265,7 @@ export function ProfilePage() {
               <Link to={isVisiting ? `/perfil/${username}/favoritos` : '/favoritos'} className="profile-stat-card block">
                 <div className="flex items-center justify-between mb-1">
                   <span className="stat-label">Favoritos</span>
-                  <Heart className="h-4 w-4 text-rose-500 fill-rose-500/20" />
+                  <Heart className="h-4 w-4 text-rose-500 fill-rose-500/25" />
                 </div>
                 <span className="stat-number">{userProfile.stats.favorites}</span>
                 <span className="stat-subtext">No acervo pessoal</span>
@@ -277,7 +274,7 @@ export function ProfilePage() {
               <div className="profile-stat-card cursor-default">
                 <div className="flex items-center justify-between mb-1">
                   <span className="stat-label">Média</span>
-                  <Award className="h-4 w-4 text-amber-400 fill-amber-400/20" />
+                  <Award className="h-4 w-4 text-amber-500 fill-amber-500/25" />
                 </div>
                 <span className="stat-number">{userProfile.stats.avgRating}</span>
                 <span className="stat-subtext">Nota geral dada</span>
@@ -286,7 +283,7 @@ export function ProfilePage() {
               <Link to={isVisiting ? `/perfil/${username}/amigos` : '/amigos'} className="profile-stat-card block">
                 <div className="flex items-center justify-between mb-1">
                   <span className="stat-label">Amigos</span>
-                  <Users className="h-4 w-4 text-blue-400" />
+                  <Users className="h-4 w-4 text-blue-500" />
                 </div>
                 <span className="stat-number">{userProfile.stats.friends}</span>
                 <span className="stat-subtext">Conectados</span>
@@ -295,7 +292,7 @@ export function ProfilePage() {
               <Link to={isVisiting ? `/perfil/${username}/idolos` : '/idolos'} className="profile-stat-card block">
                 <div className="flex items-center justify-between mb-1">
                   <span className="stat-label">Ídolos</span>
-                  <User className="h-4 w-4 text-purple-400" />
+                  <User className="h-4 w-4 text-purple-500" />
                 </div>
                 <span className="stat-number">{userProfile.stats.idols}</span>
                 <span className="stat-subtext">Artistas seguidos</span>
@@ -304,7 +301,7 @@ export function ProfilePage() {
               <Link to={isVisiting ? `/perfil/${username}/listas` : '/listas'} className="profile-stat-card block">
                 <div className="flex items-center justify-between mb-1">
                   <span className="stat-label">Listas</span>
-                  <ListMusic className="h-4 w-4 text-emerald-400" />
+                  <ListMusic className="h-4 w-4 text-emerald-500" />
                 </div>
                 <span className="stat-number">{userProfile.stats.lists}</span>
                 <span className="stat-subtext">Playlists criadas</span>
@@ -318,28 +315,28 @@ export function ProfilePage() {
       </div>
 
       {/* Cards Inferiores com Links Funcionais */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Link to={isVisiting ? `/perfil/${username}/avaliacoes` : '/minhas-avaliacoes'} className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-2xl flex items-center justify-between hover:border-zinc-700/80 transition-all group">
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-8xl mx-auto px-1">
+        <Link to={isVisiting ? `/perfil/${username}/avaliacoes` : '/minhas-avaliacoes'} className="bg-card border border-border p-5 rounded-2xl flex items-center justify-between hover:border-primary/50 transition-all group shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-primary/10 text-primary rounded-xl">
               <Star className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-white text-sm">Histórico de Avaliações</h3>
-              <p className="text-xs text-zinc-400">Veja o histórico completo das notas publicadas.</p>
+              <h3 className="font-semibold text-foreground text-sm">Histórico de Avaliações</h3>
+              <p className="text-xs text-muted-foreground">Veja o histórico completo das notas publicadas.</p>
             </div>
           </div>
           <span className="text-xs text-primary font-semibold group-hover:underline">Ver →</span>
         </Link>
 
-        <Link to={isVisiting ? `/perfil/${username}/favoritos` : '/favoritos'} className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-2xl flex items-center justify-between hover:border-zinc-700/80 transition-all group">
+        <Link to={isVisiting ? `/perfil/${username}/favoritos` : '/favoritos'} className="bg-card border border-border p-5 rounded-2xl flex items-center justify-between hover:border-primary/50 transition-all group shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl">
               <Heart className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-white text-sm">Álbuns Favoritos</h3>
-              <p className="text-xs text-zinc-400">Gerencie e visualize a lista de discos prediletos.</p>
+              <h3 className="font-semibold text-foreground text-sm">Álbuns Favoritos</h3>
+              <p className="text-xs text-muted-foreground">Gerencie e visualize a lista de discos prediletos.</p>
             </div>
           </div>
           <span className="text-xs text-amber-500 font-semibold group-hover:underline">Ver →</span>

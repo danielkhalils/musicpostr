@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Loader2, Star, Music, Clock, MessageSquare, ThumbsUp, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Star, Music, Clock, MessageSquare, ThumbsUp, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import './AlbumDetails.css';
 
@@ -34,7 +34,7 @@ interface Review {
 }
 
 const genZPhrases: { [key: number]: { text: string; color: string } } = {
-  0: { text: "Dê sua nota para o álbum...", color: "#a1a1aa" },
+  0: { text: "Dê sua nota para o álbum...", color: "var(--muted-foreground)" },
   1: { text: "💀 Intakável, horrível de ouvir", color: "#ef4444" },
   2: { text: "🗑️ Muito fraco, total decepção", color: "#ef4444" },
   3: { text: "😬 Bem ruinzinho, não curti", color: "#f97316" },
@@ -70,7 +70,6 @@ export function AlbumDetails() {
     async function fetchAlbumDetails() {
       setIsLoading(true);
       try {
-        // Utilizando a rota interna configurada no Vercel para evitar bloqueio de CORS em produção
         const response = await fetch(`/api/deezer/album/${id}`);
         const data = await response.json();
         if (data && data.id) {
@@ -117,7 +116,7 @@ export function AlbumDetails() {
 
   if (isLoading) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-zinc-950">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -125,7 +124,7 @@ export function AlbumDetails() {
 
   if (!album) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center bg-zinc-950 text-zinc-400 gap-4">
+      <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center bg-background text-muted-foreground gap-4">
         <p>Álbum não encontrado.</p>
         <Link to="/artistas">
           <Button variant="outline">Voltar para Artistas</Button>
@@ -146,10 +145,6 @@ export function AlbumDetails() {
   return (
     <div className="album-detail-container">
       
-      <Link to={artistId ? `/artista/${artistId}` : '/artistas'} className="album-back-link">
-        Voltar para o Artista
-      </Link>
-
       <div className="album-hero-wrapper">
         {coverImage ? (
           <div 
@@ -162,61 +157,71 @@ export function AlbumDetails() {
 
         <div className="album-hero-gradient" />
 
-        {/* Bloco Superior Dividido Exatamente no Padrão das Caixas */}
+        {/* Bloco Superior Dividido */}
         <div className="album-hero-content-grid">
           
-          {/* Esquerda do Topo (Capa + Infos + Streaming) */}
+          {/* Esquerda do Topo (Botão de Voltar + Capa + Infos + Streaming) */}
           <div className="album-hero-left">
-            <div className="album-cover-container">
-              {coverImage ? (
-                <img src={coverImage} alt={album.title} className="album-cover-image" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-zinc-600">
-                  <Music className="h-12 w-12" />
-                </div>
-              )}
+            
+            <div className="w-full">
+              <Link to={artistId ? `/artista/${artistId}` : '/artistas'} className="album-back-link">
+                <ArrowLeft className="h-3.5 w-3.5" /> Voltar para o Artista
+              </Link>
             </div>
 
-            <div className="album-info-wrapper">
-              <h1 className="album-title">{album.title}</h1>
-              <p className="album-artist-name">{artistName}</p>
-              <div className="album-metadata">
-                <span>Lançamento: {album.release_date?.substring(0, 4) || 'Desconhecido'}</span>
-                <span>•</span>
-                <span>Álbum Oficial</span>
+            <div className="album-hero-main-content">
+              <div className="album-cover-container">
+                {coverImage ? (
+                  <img src={coverImage} alt={album.title} className="album-cover-image" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                    <Music className="h-12 w-12" />
+                  </div>
+                )}
               </div>
 
-              <div className="streaming-wrapper">
-                <p className="text-xs text-zinc-400 font-medium mb-2">Ouvir no Streaming:</p>
-                <div className="streaming-links-container">
-                  {album.link && (
-                    <a href={album.link} target="_blank" rel="noopener noreferrer" className="streaming-button deezer">
-                      <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#ff7300"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm4.8 17.6h-2.4V6.4h2.4v11.2zm-4.4 0h-2.4V9.6h2.4v8zm-4.4 0H5.6v-4.8h2.4v4.8z"/></svg>
-                      Deezer
+              <div className="album-info-wrapper">
+                <h1 className="album-title">{album.title}</h1>
+                <p className="album-artist-name">{artistName}</p>
+                <div className="album-metadata">
+                  <span>Lançamento: {album.release_date?.substring(0, 4) || 'Desconhecido'}</span>
+                  <span>•</span>
+                  <span>Álbum Oficial</span>
+                </div>
+
+                <div className="streaming-wrapper">
+                  <p className="text-xs text-foreground font-semibold mb-2">Ouvir no Streaming:</p>
+                  <div className="streaming-links-container">
+                    {album.link && (
+                      <a href={album.link} target="_blank" rel="noopener noreferrer" className="streaming-button deezer">
+                        <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#ff7300"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm4.8 17.6h-2.4V6.4h2.4v11.2zm-4.4 0h-2.4V9.6h2.4v8zm-4.4 0H5.6v-4.8h2.4v4.8z"/></svg>
+                        Deezer
+                      </a>
+                    )}
+                    <a href={`https://music.youtube.com/search?q=${encodeURIComponent(`${album.title} ${artistName}`)}`} target="_blank" rel="noopener noreferrer" className="streaming-button youtube">
+                      <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#ff0000"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm4.5 12.8-6 3.5c-.32.18-.72-.05-.72-.42V8.7c0-.37.4-.6.72-.42l6 3.5c.32.19.32.65 0 .84z"/></svg>
+                      YouTube Music
                     </a>
-                  )}
-                  <a href={`https://music.youtube.com/search?q=${encodeURIComponent(`${album.title} ${artistName}`)}`} target="_blank" rel="noopener noreferrer" className="streaming-button youtube">
-                    <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#ff0000"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm4.5 12.8-6 3.5c-.32.18-.72-.05-.72-.42V8.7c0-.37.4-.6.72-.42l6 3.5c.32.19.32.65 0 .84z"/></svg>
-                    YouTube Music
-                  </a>
-                  <a href={`https://music.apple.com/us/search?term=${encodeURIComponent(`${album.title} ${artistName}`)}`} target="_blank" rel="noopener noreferrer" className="streaming-button apple">
-                    <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#fa2d4b"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.72c.57-.69 1.05-1.65.93-2.62-.92.04-2.03.62-2.69 1.39-.53.61-.99 1.59-.87 2.55 1.03.08 2.06-.51 2.63-1.32z"/></svg>
-                    Apple Music
-                  </a>
-                  <a href={`https://open.spotify.com/search/${encodeURIComponent(`${album.title} ${artistName}`)}`} target="_blank" rel="noopener noreferrer" className="streaming-button spotify">
-                    <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.521 17.34c-.24.359-.72.48-1.08.24-2.999-1.8-6.78-2.22-11.22-1.2-.42.12-.84-.18-.96-.6-.12-.42.18-.84.601-.96 4.801-1.14 9.001-.66 12.36 1.38.36.24.48.72.3 1.08zm1.44-3.84c-.3.48-.9.66-1.38.36-3.42-2.1-8.58-2.7-12.6-1.47-.54.18-1.14-.12-1.32-.66-.18-.54.12-1.14.66-1.32 4.62-1.38 10.32-.72 14.34 1.68.48.3.66.9.3 1.35zm.12-4.08C14.88 7.26 8.64 7.08 5.04 8.16c-.66.18-1.38-.18-1.56-.84-.18-.66.18-1.38.84-1.56 4.2-1.26 11.22-1.08 15.66 1.62.6.36.78 1.14.42 1.74-.36.6-1.14.78-1.74.42z"/></svg>
-                    Spotify
-                  </a>
-                  <a href={`https://tidal.com/search?q=${encodeURIComponent(`${album.title} ${artistName}`)}`} target="_blank" rel="noopener noreferrer" className="streaming-button tidal">
-                    <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#00ffff"><path d="M12 3.86L8.14 7.71 4.29 3.86 8.14 0 12 3.86zm7.71 7.71L15.86 15.43 12 11.57l3.86-3.86 3.85 3.86zm-7.71 7.72l-3.86-3.86 3.86-3.86 3.86 3.86-3.86 3.86zm7.71-7.72l-3.86-3.86-3.85 3.85 3.85 3.86 3.86-3.85z"/></svg>
-                    Tidal
-                  </a>
+                    <a href={`https://music.apple.com/us/search?term=${encodeURIComponent(`${album.title} ${artistName}`)}`} target="_blank" rel="noopener noreferrer" className="streaming-button apple">
+                      <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#fa2d4b"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.72c.57-.69 1.05-1.65.93-2.62-.92.04-2.03.62-2.69 1.39-.53.61-.99 1.59-.87 2.55 1.03.08 2.06-.51 2.63-1.32z"/></svg>
+                      Apple Music
+                    </a>
+                    <a href={`https://open.spotify.com/search/${encodeURIComponent(`${album.title} ${artistName}`)}`} target="_blank" rel="noopener noreferrer" className="streaming-button spotify">
+                      <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.521 17.34c-.24.359-.72.48-1.08.24-2.999-1.8-6.78-2.22-11.22-1.2-.42.12-.84-.18-.96-.6-.12-.42.18-.84.601-.96 4.801-1.14 9.001-.66 12.36 1.38.36.24.48.72.3 1.08zm1.44-3.84c-.3.48-.9.66-1.38.36-3.42-2.1-8.58-2.7-12.6-1.47-.54.18-1.14-.12-1.32-.66-.18-.54.12-1.14.66-1.32 4.62-1.38 10.32-.72 14.34 1.68.48.3.66.9.3 1.35zm.12-4.08C14.88 7.26 8.64 7.08 5.04 8.16c-.66.18-1.38-.18-1.56-.84-.18-.66.18-1.38.84-1.56 4.2-1.26 11.22-1.08 15.66 1.62.6.36.78 1.14.42 1.74-.36.6-1.14.78-1.74.42z"/></svg>
+                      Spotify
+                    </a>
+                    <a href={`https://tidal.com/search?q=${encodeURIComponent(`${album.title} ${artistName}`)}`} target="_blank" rel="noopener noreferrer" className="streaming-button tidal">
+                      <svg className="streaming-svg-icon" viewBox="0 0 24 24" fill="#00ffff"><path d="M12 3.86L8.14 7.71 4.29 3.86 8.14 0 12 3.86zm7.71 7.71L15.86 15.43 12 11.57l3.86-3.86 3.85 3.86zm-7.71 7.72l-3.86-3.86 3.86-3.86 3.86 3.86-3.86 3.86zm7.71-7.72l-3.86-3.86-3.85 3.85 3.85 3.86 3.86-3.85z"/></svg>
+                      Tidal
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
+
           </div>
 
-          {/* Direita do Topo (Nota da Comunidade - Apenas o número) */}
+          {/* Direita do Topo (Nota da Comunidade) */}
           <div className="musicpostr-score-wrapper">
             <span className="musicpostr-label">Nota da Comunidade</span>
             <div className="musicpostr-score-badge">
@@ -266,7 +271,7 @@ export function AlbumDetails() {
                 className="review-textarea"
               />
               <div className="review-submit-wrapper">
-                <Button type="submit" className="bg-primary hover:bg-primary/90 text-white rounded-full px-6">
+                <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6">
                   Post Review
                 </Button>
               </div>
@@ -327,11 +332,11 @@ export function AlbumDetails() {
 
                     <p className="feed-text mt-1">"{rev.comment}"</p>
                     
-                    <div className="flex items-center gap-4 mt-2 text-xs text-zinc-500">
-                      <button className="flex items-center gap-1 hover:text-white transition-colors">
+                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                      <button className="flex items-center gap-1 hover:text-foreground transition-colors">
                         <ThumbsUp className="h-3 w-3" /> Like
                       </button>
-                      <button className="flex items-center gap-1 hover:text-white transition-colors">
+                      <button className="flex items-center gap-1 hover:text-foreground transition-colors">
                         <MessageSquare className="h-3 w-3" /> Comment
                       </button>
                     </div>
@@ -343,7 +348,7 @@ export function AlbumDetails() {
             {submittedReviews.length > 3 && (
               <button 
                 onClick={() => setShowAllReviews(!showAllReviews)}
-                className="w-full mt-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-lg flex items-center justify-center gap-1.5 transition-all"
+                className="w-full mt-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground bg-muted hover:bg-card border border-border rounded-lg flex items-center justify-center gap-1.5 transition-all"
               >
                 {showAllReviews ? (
                   <>

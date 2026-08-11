@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Users, ArrowLeft } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
+import './FriendsPage.css';
 
 interface Friend {
   id: string;
@@ -23,29 +24,29 @@ export function FriendsPage() {
   return (
     <div className="page-container pb-12">
       <div className="mb-8">
-        <Link to="/perfil" className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 mb-2">
+        <Link to="/perfil" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2 transition-colors">
           <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Perfil
         </Link>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Users className="h-6 w-6 text-primary" /> 
           {isVisiting ? `Amigos de @${username}` : 'Minha Rede de Amigos'}
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">Críticos e entusiastas musicais conectados.</p>
+        <p className="text-xs text-muted-foreground mt-1">Críticos e entusiastas musicais conectados.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="friends-grid">
         {friends.map((friend) => (
-          <div key={friend.id} className="bg-zinc-900/60 border border-zinc-800/80 p-4 rounded-2xl flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <img src={friend.avatar} alt={friend.name} className="w-12 h-12 rounded-full object-cover border border-zinc-700" />
-              <div>
-                <h3 className="text-sm font-semibold text-white">{friend.name}</h3>
-                <p className="text-xs text-primary">@{friend.username}</p>
-                <p className="text-[11px] text-zinc-500 mt-0.5">{friend.reviewsCount} avaliações publicadas</p>
+          <div key={friend.id} className="friend-card">
+            <div className="flex items-center gap-3 min-w-0">
+              <img src={friend.avatar} alt={friend.name} className="friend-avatar" />
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-foreground truncate">{friend.name}</h3>
+                <p className="text-xs text-primary truncate">@{friend.username}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{friend.reviewsCount} avaliações publicadas</p>
               </div>
             </div>
-            <Link to={`/perfil/${friend.username}`}>
-              <Button variant="outline" className="border-zinc-700 bg-zinc-900 text-zinc-200 hover:bg-zinc-800 text-xs rounded-xl h-8">
+            <Link to={`/perfil/${friend.username}`} className="flex-shrink-0">
+              <Button variant="outline" className="border-border bg-card text-foreground hover:bg-muted text-xs rounded-xl h-8 shadow-sm">
                 Ver Perfil
               </Button>
             </Link>
