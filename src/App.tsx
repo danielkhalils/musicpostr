@@ -1,5 +1,4 @@
 import HomePage from "./pages/Home/HomePage";
-import { Navbar } from "./components/Navbar/Navbar";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ArtistsPage } from "./pages/Artists/ArtistsPage";
 import { ArtistDetail } from "./pages/Artists/ArtistDetails/ArtistDetail";
@@ -14,6 +13,7 @@ import { FriendsPage } from "./pages/Profile/FriendsPage";
 import { IdolsPage } from "./pages/Profile/IdolsPage";
 import { ListsPage } from "./pages/Profile/ListsPage";
 import { HomeFeedPage } from "./pages/Home/HomeFeedPage";
+import { Navbar } from "./components/Navbar/Navbar";
 
 function App() {
   return (

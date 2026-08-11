@@ -149,8 +149,6 @@ export function ProfilePage() {
     return string === 'website' ? 'Site Pessoal' : string.charAt(0).toUpperCase() + string.slice(1);
   };
 
-  const routePrefix = isVisiting ? `/perfil/${username}` : '';
-
   return (
     <div className="page-container pb-12">
       {/* Capa de Fundo do Perfil */}
