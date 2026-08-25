@@ -37,13 +37,13 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-800 dark:border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo / Nome do Site */}
         <div className="flex items-center gap-2">
           <a
             href="/"
-            className="flex items-center gap-2 font-bold text-xl text-white"
+            className="flex items-center gap-2 font-bold text-xl text-zinc-900 dark:text-white"
           >
             <Music className="h-6 w-6 text-primary" />
             <span>Musicpostr</span>
@@ -51,17 +51,17 @@ export function Navbar() {
         </div>
 
         {/* Links de Navegação (Desktop) */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-          <a href="/" className="transition-colors hover:text-white">
+        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+          <a href="/" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
             Início
           </a>
-          <a href="/rankings" className="transition-colors hover:text-white">
+          <a href="/rankings" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
             Rankings
           </a>
-          <a href="/reviews" className="transition-colors hover:text-white">
+          <a href="/reviews" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
             Reviews
           </a>
-          <a href="/artistas" className="transition-colors hover:text-white">
+          <a href="/artistas" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
             Artistas
           </a>
         </nav>
@@ -76,18 +76,15 @@ export function Navbar() {
               <Button
                 variant="secondary"
                 size="icon"
-                className="rounded-full bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                className="rounded-full"
               >
                 <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="bg-zinc-900 border-zinc-800 text-zinc-200 w-48"
-            >
+            <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem
                 asChild
-                className="focus:bg-zinc-800 focus:text-white cursor-pointer"
+                className="cursor-pointer"
               >
                 <Link to="/perfil" className="w-full">
                   Meu Perfil
@@ -96,7 +93,7 @@ export function Navbar() {
 
               <DropdownMenuItem
                 asChild
-                className="focus:bg-zinc-800 focus:text-white cursor-pointer"
+                className="cursor-pointer"
               >
                 <Link to="/minhas-avaliacoes" className="w-full">
                   Minhas Avaliações
@@ -105,22 +102,22 @@ export function Navbar() {
 
               <DropdownMenuItem
                 asChild
-                className="focus:bg-zinc-800 focus:text-white cursor-pointer"
+                className="cursor-pointer"
               >
                 <Link to="/configuracoes" className="w-full">
                   Configurações
                 </Link>
               </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="bg-zinc-800" />
+              <DropdownMenuSeparator />
 
               {/* Botão de Alternância de Tema (Dark / Light) */}
               <DropdownMenuItem
                 onClick={toggleTheme}
-                className="focus:bg-zinc-800 focus:text-white cursor-pointer flex items-center justify-between"
+                className="cursor-pointer flex items-center justify-between"
               >
                 <span>Tema</span>
-                <div className="flex items-center gap-1.5 text-xs font-medium text-zinc-400">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                   {isDarkMode ? (
                     <>
                       <Moon className="h-3.5 w-3.5 text-primary" /> Escuro
@@ -133,9 +130,9 @@ export function Navbar() {
                 </div>
               </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="bg-zinc-800" />
+              <DropdownMenuSeparator />
 
-              <DropdownMenuItem className="text-red-400 focus:bg-red-950/50 focus:text-red-300 cursor-pointer">
+              <DropdownMenuItem className="text-red-600 focus:bg-red-50 focus:text-red-700 dark:text-red-400 dark:focus:bg-red-950/50 dark:focus:text-red-300 cursor-pointer">
                 Sair
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -147,49 +144,46 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden text-zinc-300 hover:bg-zinc-800"
+                className="md:hidden text-zinc-700 dark:text-zinc-300"
               >
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent
-              side="left"
-              className="w-[300px] bg-zinc-950 border-zinc-800 text-white"
-            >
+            <SheetContent side="left" className="w-[300px]">
               <div className="flex flex-col gap-6 py-6">
                 <a
                   href="/"
-                  className="flex items-center gap-2 font-bold text-lg text-white"
+                  className="flex items-center gap-2 font-bold text-lg text-zinc-900 dark:text-white"
                   onClick={() => setIsOpen(false)}
                 >
                   <Music className="h-5 w-5 text-primary" />
                   <span>Musicpostr</span>
                 </a>
-                <nav className="flex flex-col gap-4 text-base font-medium text-zinc-400">
+                <nav className="flex flex-col gap-4 text-base font-medium text-zinc-600 dark:text-zinc-400">
                   <a
                     href="/"
-                    className="transition-colors hover:text-white"
+                    className="transition-colors hover:text-zinc-900 dark:hover:text-white"
                     onClick={() => setIsOpen(false)}
                   >
                     Início
                   </a>
                   <a
                     href="/rankings"
-                    className="transition-colors hover:text-white"
+                    className="transition-colors hover:text-zinc-900 dark:hover:text-white"
                     onClick={() => setIsOpen(false)}
                   >
                     Rankings
                   </a>
                   <a
                     href="/reviews"
-                    className="transition-colors hover:text-white"
+                    className="transition-colors hover:text-zinc-900 dark:hover:text-white"
                     onClick={() => setIsOpen(false)}
                   >
                     Reviews
                   </a>
                   <a
                     href="/artistas"
-                    className="transition-colors hover:text-white"
+                    className="transition-colors hover:text-zinc-900 dark:hover:text-white"
                     onClick={() => setIsOpen(false)}
                   >
                     Artistas

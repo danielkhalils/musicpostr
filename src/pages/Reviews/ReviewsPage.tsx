@@ -149,7 +149,7 @@ export function ReviewsPage() {
 
   return (
     <div className="page-container">
-      <div className="page-header-wrapper flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="page-header-wrapper">
         <div>
           <h1 className="page-title">
             <Award className="h-8 w-8 text-primary stroke-[2.5]" /> Avaliações da Comunidade

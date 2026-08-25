@@ -36,7 +36,7 @@ export function HomePage() {
             </Link>
 
             <Link to="/rankings">
-              <Button size="lg" variant="outline" className="border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 text-zinc-200 font-medium rounded-full px-8 backdrop-blur-sm transition-all hover:scale-105">
+              <Button size="lg" variant="outline" className="border-zinc-300 bg-white/50 hover:bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:bg-zinc-900 dark:text-zinc-200 font-medium rounded-full px-8 backdrop-blur-sm transition-all hover:scale-105">
                 <Trophy className="h-4 w-4 mr-2 text-amber-400" /> Ver Rankings
               </Button>
             </Link>
@@ -47,10 +47,10 @@ export function HomePage() {
       {/* Seção de Atalhos / Recursos */}
       <div className="home-features-container">
         <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
             Explore a plataforma
           </h2>
-          <p className="text-zinc-400 text-sm mt-1">
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
             Tudo o que você precisa para acompanhar o mundo da música em um só lugar
           </p>
         </div>
@@ -58,7 +58,7 @@ export function HomePage() {
         <div className="home-cards-grid">
           
           {/* Card 1: Artistas (Com Disc3 roxo) */}
-          <Link to="/artistas" className="home-feature-card artist-card">
+          <Link to="/artistas" className="home-feature-card home-artist-card">
             <div className="home-card-glow artist-glow" />
             <div>
               <div className="home-card-icon-wrapper artist-icon">

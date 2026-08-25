@@ -83,12 +83,12 @@ export function MyReviewsPage() {
                   <p className="text-xs text-foreground/85 mt-3 italic">"{rev.comment}"</p>
 
                   <div className="flex items-center gap-3 mt-4 pt-3 border-t border-border">
-                    <Link to={`/album/${rev.id}`} className="text-xs text-primary font-semibold hover:underline">
+                    <Link to={`/album/${rev.id}`} className="text-xs text-primary font-semibold hover:underline py-1.5 pr-2">
                       Ver Álbum →
                     </Link>
-                    <button 
-                      onClick={() => handleDelete(rev.id)} 
-                      className="text-xs text-red-500 hover:text-red-400 flex items-center gap-1 ml-auto transition-colors"
+                    <button
+                      onClick={() => handleDelete(rev.id)}
+                      className="text-xs text-red-500 hover:text-red-400 flex items-center gap-1 ml-auto p-2 -mr-2 transition-colors"
                     >
                       <Trash2 className="h-3.5 w-3.5" /> Excluir
                     </button>

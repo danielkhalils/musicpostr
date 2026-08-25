@@ -199,11 +199,14 @@ export function ProfilePage() {
 
             {!isVisiting && (
               <Link to="/configuracoes">
-                <Button 
-                  variant="outline" 
-                  className="border-border bg-card text-foreground hover:bg-muted rounded-full text-xs h-9 px-4 transition-all shadow-sm"
+                <Button
+                  variant="outline"
+                  className="border-border bg-card text-foreground hover:bg-muted rounded-full text-xs h-9 px-4 transition-all flex items-center gap-1.5 shadow-sm"
+                  title="Editar Perfil nas Configurações"
                 >
-                  <Edit3 className="h-3.5 w-3.5 mr-1.5" /> Editar Perfil nas Configurações
+                  <Edit3 className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Editar Perfil nas Configurações</span>
+                  <span className="sm:hidden">Editar</span>
                 </Button>
               </Link>
             )}
@@ -217,8 +220,11 @@ export function ProfilePage() {
           <div className="profile-identity-section">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">{userProfile.name}</h1>
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1 font-medium">
-                <span className="text-primary font-semibold">@{userProfile.username}</span> • <Mail className="h-3 w-3 ml-0.5 text-muted-foreground" /> {userProfile.email}
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1 font-medium min-w-0">
+                <span className="text-primary font-semibold flex-shrink-0">@{userProfile.username}</span>
+                <span aria-hidden="true" className="flex-shrink-0">•</span>
+                <Mail className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                <span className="truncate">{userProfile.email}</span>
               </p>
             </div>
 

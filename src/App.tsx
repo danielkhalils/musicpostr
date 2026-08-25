@@ -1,5 +1,4 @@
 import HomePage from "./pages/Home/HomePage";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ArtistsPage } from "./pages/Artists/ArtistsPage";
 import { ArtistDetail } from "./pages/Artists/ArtistDetails/ArtistDetail";
 import { AlbumDetails } from "./pages/Artists/AlbumDetails/AlbumDetails";
@@ -13,7 +12,8 @@ import { FriendsPage } from "./pages/Profile/FriendsPage";
 import { IdolsPage } from "./pages/Profile/IdolsPage";
 import { ListsPage } from "./pages/Profile/ListsPage";
 import { HomeFeedPage } from "./pages/Home/HomeFeedPage";
-import { Navbar } from "./components/Navbar/Navbar";
+import { Navbar } from "./components/navbar/Navbar";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 function App() {
   return (

@@ -190,7 +190,7 @@ export function SettingsPage() {
             </div>
           </div>
 
-          <div className="pt-3 border-t border-border flex items-center justify-between">
+          <div className="pt-3 border-t border-border flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-foreground text-background rounded-lg">
                 <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="currentColor" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.1 8.9 5 12 5zm6.5 7c0-.4 0-.8-.1-1.2H12v2.4h3.6c-.2 1-.8 1.9-1.7 2.5l2.7 2.1c1.6-1.5 2.7-3.8 2.7-6.8zM5.3 10.3C5.1 10.8 5 11.4 5 12s.1 1.2.3 1.7L1.6 16.6C1 15.2 0.7 13.6 0.7 12s.3-3.2.9-4.6l3.7 2.9zM12 19c-3.1 0-5.8-2.1-6.7-5.3L1.6 16.6C3.5 20.4 7.4 23 12 23c4.7 0 8.6-2.6 10.5-6.4l-3.7-2.9c-.9 2.1-3 3.5-6.8 3.5z"/></svg>

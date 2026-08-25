@@ -14,7 +14,7 @@ export function ListsPage() {
 
   return (
     <div className="page-container pb-12">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-8">
         <div>
           <Link to="/perfil" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2 transition-colors">
             <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Perfil
@@ -36,9 +36,9 @@ export function ListsPage() {
         {lists.map((list) => (
           <div key={list.id} className="list-card">
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-foreground text-base">{list.title}</h3>
-                <span className="text-xs bg-muted text-muted-foreground border border-border px-2.5 py-1 rounded-full">{list.count} álbuns</span>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <h3 className="font-semibold text-foreground text-base truncate min-w-0">{list.title}</h3>
+                <span className="text-xs bg-muted text-muted-foreground border border-border px-2.5 py-1 rounded-full flex-shrink-0">{list.count} álbuns</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">{list.description}</p>
             </div>

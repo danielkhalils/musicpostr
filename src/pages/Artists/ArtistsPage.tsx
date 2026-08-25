@@ -217,8 +217,8 @@ export function ArtistsPage() {
                       onClick={(e) => toggleFollow(artist, e)}
                       className={`h-8 px-3 rounded-full text-xs font-semibold shadow-md transition-all gap-1 ${
                         isFollowing
-                          ? "bg-primary text-white border-primary hover:bg-primary/80"
-                          : "bg-zinc-900/90 text-zinc-200 border-zinc-700 hover:bg-zinc-800 hover:text-white"
+                          ? "bg-primary text-white border-primary hover:bg-primary/80 dark:bg-primary dark:hover:bg-primary/80"
+                          : "bg-zinc-900/90 text-zinc-200 border-zinc-700 hover:bg-zinc-800 hover:text-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                       }`}
                       title={isFollowing ? "Deixar de seguir" : "Seguir como ídolo"}
                     >
