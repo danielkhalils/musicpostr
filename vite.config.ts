@@ -10,6 +10,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/deezer/, ''),
       },
+      '/api/musicbrainz': {
+        target: 'https://musicbrainz.org/ws/2',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/musicbrainz/, ''),
+      },
     },
   },
 });

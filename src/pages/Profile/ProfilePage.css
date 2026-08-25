@@ -1,13 +1,19 @@
-/* --- Capa de Fundo --- */
+/* =================================================================
+   PÁGINA DE PERFIL (Light/Dark Mode Compatível)
+   ================================================================= */
+
+/* Capa de Fundo do Perfil */
 .profile-banner-container {
   width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
   height: 16rem;
   border-radius: 1.25rem;
   overflow: hidden;
   position: relative;
-  background-color: #18181b;
-  border: 1px solid rgba(63, 63, 70, 0.6);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  background-color: var(--muted);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
 .profile-banner-image {
@@ -19,38 +25,48 @@
 .profile-banner-fallback {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #27272a 0%, #09090b 100%);
+  background: linear-gradient(135deg, var(--muted) 0%, var(--background) 100%);
 }
 
-/* --- Card Principal com Sobreposição --- */
-.profile-header-card {
-  background-color: rgba(24, 24, 27, 0.92);
-  border: 1px solid rgba(63, 63, 70, 0.5);
+/* Card Principal com Sobreposição */
+.profile-main-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
   border-radius: 1.25rem;
-  padding: 2.25rem;
+  padding: 1.25rem;
   backdrop-filter: blur(16px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
-  margin: -4rem 1.5rem 0 1.5rem;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+  max-width: 80rem;
+  margin: -4rem auto 0 auto;
   position: relative;
   z-index: 10;
+  box-sizing: border-box;
 }
 
-@media (min-width: 768px) {
-  .profile-header-card {
-    margin: -4rem 3rem 0 3rem;
+@media (min-width: 640px) {
+  .profile-main-card {
+    padding: 2.25rem;
   }
 }
 
-/* --- Topo Interno (Avatar + Botão) --- */
+@media (min-width: 768px) {
+  .profile-main-card {
+    padding: 2.5rem 3rem;
+  }
+}
+
+/* Topo Interno (Avatar + Botão) */
 .profile-top-row {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-top: -4.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: -5rem;
   margin-bottom: 1.5rem;
 }
 
-/* --- Avatar do Usuário com Borda Colorida --- */
+/* Avatar do Usuário com Borda Adaptativa */
 .profile-avatar-container {
   position: relative;
   width: 7rem;
@@ -58,8 +74,8 @@
   min-width: 7rem;
   min-height: 7rem;
   border-radius: 9999px;
-  border: 4px solid #18181b;
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.35);
+  border: 4px solid var(--card);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   padding: 2px;
 }
@@ -78,22 +94,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #27272a;
+  background-color: var(--muted);
 }
 
 .profile-camera-badge {
   position: absolute;
   bottom: 2px;
   right: 2px;
-  background-color: #3b82f6;
-  border: 2px solid #18181b;
+  background-color: var(--primary);
+  border: 2px solid var(--card);
   padding: 0.35rem;
   border-radius: 9999px;
-  color: #ffffff;
-  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+  color: var(--primary-foreground);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
 }
 
-/* --- Grid de Conteúdo --- */
+/* Grid de Conteúdo */
 .profile-content-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -118,50 +134,7 @@
   }
 }
 
-/* --- Painel de Estatísticas Mais Colorido e Vibrante --- */
-.profile-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem 1.25rem;
-  background: linear-gradient(145deg, rgba(24, 24, 27, 0.95), rgba(9, 9, 11, 0.9));
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  padding: 1.25rem 1.5rem;
-  border-radius: 1rem;
-  width: 100%;
-  max-width: 25rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-}
-
-.profile-stat-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-number {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-  margin: 0.1rem 0;
-}
-
-.stat-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #a1a1aa;
-  letter-spacing: 0.025em;
-  text-transform: uppercase;
-}
-
-.stat-subtext {
-  font-size: 0.65rem;
-  color: #71717a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* --- Painel Moderno de Estatísticas --- */
+/* Painel Moderno de Estatísticas */
 .profile-stats-container {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -171,29 +144,58 @@
 }
 
 .profile-stat-card {
-  background: linear-gradient(135deg, rgba(24, 24, 27, 0.95) 0%, rgba(15, 15, 18, 0.9) 100%);
-  border: 1px solid rgba(63, 63, 70, 0.4);
+  background: var(--muted);
+  border: 1px solid var(--border);
   border-radius: 1rem;
-  padding: 0.85rem 1rem;
+  padding: 0.65rem 0.6rem;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   transition: all 0.25s ease;
   position: relative;
   overflow: hidden;
+  text-decoration: none;
+}
+
+@media (min-width: 640px) {
+  .profile-stat-card {
+    padding: 0.85rem 1rem;
+  }
 }
 
 .profile-stat-card:hover {
-  border-color: rgba(113, 113, 122, 0.7);
+  border-color: var(--primary);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.6);
-  background: linear-gradient(135deg, rgba(30, 30, 35, 0.95) 0%, rgba(20, 20, 24, 0.9) 100%);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+  background: var(--card);
 }
 
 .profile-stat-card.primary-stat {
-  border-color: rgba(var(--primary-rgb, 59, 130, 246), 0.3);
-  background: linear-gradient(135deg, rgba(24, 24, 27, 0.95) 0%, rgba(20, 25, 40, 0.85) 100%);
+  border-color: rgba(59, 130, 246, 0.35);
 }
 
+.stat-number {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--foreground);
+  letter-spacing: -0.02em;
+  margin: 0.1rem 0;
+  line-height: 1.2;
+}
 
+.stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
 
-
+.stat-subtext {
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}

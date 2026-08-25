@@ -35,7 +35,6 @@ export function RankingsPage() {
     async function fetchRankingsData() {
       setIsLoading(true);
       try {
-        // Utilizando a rota interna configurada no Vercel para evitar bloqueio de CORS em produção
         const response = await fetch(`/api/deezer/chart/0/albums`);
         const data = await response.json();
 
@@ -80,7 +79,7 @@ export function RankingsPage() {
       
       {/* Cabeçalho */}
       <div className="page-header-wrapper">
-        <h1 className="page-title text-white">
+        <h1 className="page-title">
           <Trophy className="h-8 w-8 text-amber-400 fill-amber-400" /> Rankings & Estatísticas
         </h1>
         <p className="page-subtitle">
