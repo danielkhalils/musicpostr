@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Loader2, Star, Music, Clock, MessageSquare, ThumbsUp, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
+import { Loader2, Star, Music, Clock, MessageSquare, ThumbsUp, ChevronDown, ChevronUp, ArrowLeft, Maximize2 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
+import { findAlbumCoverArt, type CoverArtResult } from '../../../services/coverArt.service';
 import './AlbumDetails.css';
 
 interface Track {
@@ -57,6 +59,13 @@ export function AlbumDetails() {
   const [reviewText, setReviewText] = useState<string>('');
   
   const [showAllReviews, setShowAllReviews] = useState<boolean>(false);
+
+  // Visualizador de capa em alta resolução (Cover Art Archive)
+  const [isCoverViewerOpen, setIsCoverViewerOpen] = useState<boolean>(false);
+  const [coverSide, setCoverSide] = useState<'front' | 'back'>('front');
+  const [coverArt, setCoverArt] = useState<CoverArtResult | null>(null);
+  const [isLoadingCoverArt, setIsLoadingCoverArt] = useState<boolean>(false);
+  const [coverLoadError, setCoverLoadError] = useState<boolean>(false);
   
   const [submittedReviews, setSubmittedReviews] = useState<Review[]>([
     { id: 1, user: 'AnaBeat', comment: 'Uma obra-prima absoluta de design sonoro e atmosferas.', rating: 10 },
@@ -137,6 +146,35 @@ export function AlbumDetails() {
   const artistId = album.artist?.id || '';
   const artistName = album.artist?.name || 'Artista';
 
+  const handleCoverClick = () => {
+    setIsCoverViewerOpen(true);
+    setCoverSide('front');
+    setCoverLoadError(false);
+    if (!coverArt && !isLoadingCoverArt) {
+      setIsLoadingCoverArt(true);
+      findAlbumCoverArt(album.title, artistName)
+        .then((result) => setCoverArt(result))
+        .catch((error) => {
+          console.error('Erro ao buscar capa no Cover Art Archive:', error);
+          setCoverArt(null);
+        })
+        .finally(() => setIsLoadingCoverArt(false));
+    }
+  };
+
+  const handleSelectSide = (side: 'front' | 'back') => {
+    if (side === 'back' && !coverArt?.backUrl) return;
+    setCoverSide(side);
+    setCoverLoadError(false);
+  };
+
+  const activeCoverUrl =
+    coverArt && !coverLoadError
+      ? coverSide === 'front'
+        ? coverArt.frontUrl
+        : coverArt.backUrl ?? null
+      : coverImage ?? null;
+
   const activeScore = hoverRating || rating;
   const currentGenZ = genZPhrases[activeScore] || genZPhrases[0];
 
@@ -170,7 +208,20 @@ export function AlbumDetails() {
             </div>
 
             <div className="album-hero-main-content">
-              <div className="album-cover-container">
+              <div
+                className="album-cover-container"
+                role="button"
+                tabIndex={0}
+                aria-label={`Ver capa de ${album.title} em alta resolução`}
+                onClick={handleCoverClick}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleCoverClick();
+                  }
+                }}
+                title="Clique para ver a capa em alta resolução"
+              >
                 {coverImage ? (
                   <img src={coverImage} alt={album.title} className="album-cover-image" />
                 ) : (
@@ -178,6 +229,9 @@ export function AlbumDetails() {
                     <Music className="h-12 w-12" />
                   </div>
                 )}
+                <div className="album-cover-hd-overlay">
+                  <Maximize2 className="h-3.5 w-3.5" /> Ver capa em HD
+                </div>
               </div>
 
               <div className="album-info-wrapper">
@@ -365,6 +419,74 @@ export function AlbumDetails() {
           </div>
         </div>
       </div>
+
+      {/* Visualizador de Capa em Alta Resolução (Cover Art Archive) */}
+      <Dialog open={isCoverViewerOpen} onOpenChange={setIsCoverViewerOpen}>
+        <DialogContent className="max-w-xl gap-4 p-4 sm:p-5">
+          <DialogHeader>
+            <DialogTitle className="text-base">{album.title}</DialogTitle>
+            <DialogDescription>
+              {artistName} • Imagens em alta resolução via Cover Art Archive
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex min-h-[20rem] items-center justify-center overflow-hidden rounded-lg border border-border bg-muted">
+            {isLoadingCoverArt ? (
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            ) : activeCoverUrl ? (
+              <img
+                key={activeCoverUrl}
+                src={activeCoverUrl}
+                alt={coverSide === 'front' ? `Capa frontal de ${album.title}` : `Verso de ${album.title}`}
+                className="max-h-[60vh] w-auto object-contain"
+                onError={() => setCoverLoadError(true)}
+              />
+            ) : (
+              <div className="flex flex-col items-center gap-2 p-8 text-center text-muted-foreground">
+                <Music className="h-8 w-8" />
+                <p className="text-sm">
+                  {coverLoadError
+                    ? 'Não foi possível carregar a imagem do Cover Art Archive.'
+                    : 'Não encontramos imagens em alta resolução para este álbum.'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              size="sm"
+              variant={coverSide === 'front' ? 'default' : 'outline'}
+              className={`rounded-full px-5 ${coverSide === 'front' ? '' : 'border-zinc-300 bg-white/50 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-200 dark:hover:bg-zinc-800'}`}
+              onClick={() => handleSelectSide('front')}
+            >
+              Frente
+            </Button>
+            <Button
+              size="sm"
+              variant={coverSide === 'back' ? 'default' : 'outline'}
+              disabled={!coverArt?.backUrl}
+              title={!coverArt?.backUrl ? 'Verso não disponível para este álbum' : undefined}
+              className={`rounded-full px-5 ${coverSide === 'back' || !coverArt?.backUrl ? '' : 'border-zinc-300 bg-white/50 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-200 dark:hover:bg-zinc-800'}`}
+              onClick={() => handleSelectSide('back')}
+            >
+              Verso
+            </Button>
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground">
+            Fonte:{' '}
+            <a
+              href={coverArt ? `https://coverartarchive.org/release/${coverArt.mbid}` : 'https://coverartarchive.org'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-foreground"
+            >
+              Cover Art Archive / MusicBrainz
+            </a>
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
