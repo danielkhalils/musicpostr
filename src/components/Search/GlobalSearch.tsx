@@ -171,7 +171,7 @@ export function GlobalSearch() {
       {/* Input de Busca na Topbar */}
       <div
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 px-3.5 py-1.5 rounded-full text-xs text-zinc-200 transition-all cursor-text w-56 md:w-64"
+        className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 px-3 py-1.5 rounded-full text-zinc-200 transition-all cursor-text w-40 sm:w-56 md:w-64"
       >
         <Search className="h-4 w-4 text-zinc-400 flex-shrink-0" />
         <input
@@ -182,7 +182,7 @@ export function GlobalSearch() {
             setQuery(e.target.value);
             setIsOpen(true);
           }}
-          className="bg-transparent border-none outline-none text-white w-full placeholder:text-zinc-500 text-xs"
+          className="bg-transparent border-none outline-none text-white w-full min-w-0 placeholder:text-zinc-500 text-base sm:text-xs"
         />
         {query && (
           <button
@@ -190,7 +190,8 @@ export function GlobalSearch() {
               e.stopPropagation();
               setQuery("");
             }}
-            className="text-zinc-500 hover:text-white"
+            aria-label="Limpar busca"
+            className="p-1.5 -m-1 text-zinc-500 hover:text-white"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -199,7 +200,7 @@ export function GlobalSearch() {
 
       {/* Dropdown de Resultados */}
       {isOpen && query.trim() !== "" && (
-        <div className="absolute right-0 mt-2 w-80 md:w-96 bg-zinc-950 border border-zinc-800/90 rounded-2xl shadow-2xl z-50 overflow-hidden backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm md:w-96 md:max-w-none bg-zinc-950 border border-zinc-800/90 rounded-2xl shadow-2xl z-50 overflow-hidden backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Abas de Filtro */}
           <div className="flex items-center gap-1 p-2 border-b border-zinc-800 bg-zinc-900/50 overflow-x-auto">
             {(["all", "album", "artist", "track", "user"] as const).map(

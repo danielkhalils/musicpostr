@@ -53,7 +53,7 @@ export function IdolsPage() {
               <Button 
                 onClick={() => toggleFollow(artist.id)}
                 variant="outline" 
-                className="mt-4 border-border bg-card text-foreground hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/30 text-xs rounded-full h-8 w-full transition-all shadow-sm"
+                className="mt-4 border-border bg-card text-foreground hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/30 text-xs rounded-full h-9 w-full transition-all shadow-sm"
               >
                 Seguindo ✓
               </Button>

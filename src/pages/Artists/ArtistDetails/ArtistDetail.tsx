@@ -119,7 +119,7 @@ export function ArtistDetail() {
           </Link>
 
           <div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight drop-shadow-md text-zinc-900 dark:text-white">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight drop-shadow-md text-zinc-900 dark:text-white break-words">
               {artistName || "Detalhes do Artista"}
             </h1>
             {/* Subtítulo corrigido com variável adaptativa para alto contraste em ambos os modos */}

@@ -46,7 +46,7 @@ export function FriendsPage() {
               </div>
             </div>
             <Link to={`/perfil/${friend.username}`} className="flex-shrink-0">
-              <Button variant="outline" className="border-border bg-card text-foreground hover:bg-muted text-xs rounded-xl h-8 shadow-sm">
+              <Button variant="outline" className="border-border bg-card text-foreground hover:bg-muted text-xs rounded-xl h-9 shadow-sm">
                 Ver Perfil
               </Button>
             </Link>

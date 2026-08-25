@@ -124,10 +124,10 @@
    CAPA, INFOS E DETALHES DO ÁLBUM
    ================================================================= */
 .album-cover-container {
-  width: 18rem !important;
-  height: 18rem !important;
-  min-width: 18rem !important;
-  min-height: 18rem !important;
+  width: min(18rem, calc(100vw - 2.5rem)) !important;
+  height: min(18rem, calc(100vw - 2.5rem)) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
   max-width: 18rem !important;
   max-height: 18rem !important;
   flex-shrink: 0 !important;
@@ -171,6 +171,13 @@
 
 .album-cover-container:hover .album-cover-hd-overlay {
   opacity: 1;
+}
+
+/* Touch não tem hover: mantém a dica sempre visível */
+@media (hover: none) {
+  .album-cover-hd-overlay {
+    opacity: 1;
+  }
 }
 
 @media (min-width: 640px) {
@@ -261,6 +268,15 @@
 
 .streaming-links-container::-webkit-scrollbar {
   display: none;
+}
+
+/* Mobile: quebra em linhas em vez de scroll invisível */
+@media (max-width: 640px) {
+  .streaming-links-container {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: 0.5rem;
+  }
 }
 
 .streaming-button {
@@ -424,6 +440,19 @@
   transition: all 0.15s ease;
 }
 
+/* Alvos de toque maiores no mobile */
+@media (max-width: 640px) {
+  .star-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .star-rating-container {
+    gap: 0.5rem;
+    row-gap: 0.75rem;
+  }
+}
+
 .star-icon.active[data-star="1"], .star-icon.active[data-star="2"] { color: #ef4444; fill: #ef4444; }
 .star-icon.active[data-star="3"], .star-icon.active[data-star="4"] { color: #f97316; fill: #f97316; }
 .star-icon.active[data-star="5"], .star-icon.active[data-star="6"] { color: #eab308; fill: #eab308; }
@@ -509,6 +538,14 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .track-info {
+    gap: 0.625rem;
+  }
 }
 
 .track-number {
@@ -516,12 +553,16 @@
   color: var(--muted-foreground);
   width: 1.5rem;
   text-align: right;
+  flex-shrink: 0;
 }
 
 .track-name {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .track-duration {
