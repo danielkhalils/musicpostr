@@ -1,54 +1,87 @@
 /* =================================================================
-   ESTILOS DA PÁGINA DE REVIEWS
+   PADRÃO GLOBAL DE ALINHAMENTO E TAMANHO PARA AS PÁGINAS
    ================================================================= */
-
-.reviews-container {
+.page-container {
+  max-width: 80rem;
+  margin: 0 auto;
   min-height: calc(100vh - 4rem);
-  background-color: #09090b;
-  color: #ffffff;
-  padding: 2rem 1rem 4rem 1rem;
+  padding: 2.5rem 1rem 4rem 1rem;
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
-@media (min-width: 768px) {
-  .reviews-container {
-    padding: 2.5rem 2rem 4rem 2rem;
+@media (min-width: 640px) {
+  .page-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 }
 
-.reviews-header-wrapper {
-  max-width: 72rem;
+@media (min-width: 1024px) {
+  .page-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.page-header-wrapper {
+  width: 100%;
+  max-width: 80rem;
   margin-left: auto;
   margin-right: auto;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  border-bottom: 1px solid rgba(39, 39, 42, 0.8);
-  padding-bottom: 1.5rem;
 }
 
 @media (min-width: 768px) {
-  .reviews-header-wrapper {
+  .page-header-wrapper {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
   }
 }
 
-.reviews-title {
+.page-title {
   font-size: 1.875rem;
   line-height: 2.25rem;
   font-weight: 900;
   letter-spacing: -0.025em;
-  color: #ffffff;
+  color: var(--foreground);
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.reviews-subtitle {
+@media (min-width: 768px) {
+  .page-title {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
+}
+
+.page-subtitle {
   font-size: 0.875rem;
-  color: #a1a1aa;
-  margin-top: 0.25rem;
+  color: var(--muted-foreground);
+  margin-top: 0.35rem;
+}
+
+.section-heading {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 /* Barra de Pesquisa */
@@ -65,18 +98,20 @@
 
 .reviews-search-input {
   width: 100%;
-  background-color: rgba(24, 24, 27, 0.8);
-  border: 1px solid rgba(39, 39, 42, 0.9);
+  background-color: var(--card);
+  border: 1px solid var(--border);
   border-radius: 9999px;
   padding: 0.5rem 1rem 0.5rem 2.25rem;
-  color: #ffffff;
-  font-size: 0.875rem;
+  color: var(--foreground);
+  font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .reviews-search-input:focus {
-  border-color: var(--primary, #3b82f6);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--ring);
 }
 
 .reviews-search-icon {
@@ -86,18 +121,19 @@
   transform: translateY(-50%);
   width: 1rem;
   height: 1rem;
-  color: #71717a;
+  color: var(--muted-foreground);
 }
 
-/* Grid de Álbuns */
+/* Grid de Álbuns (Responsiva Mobile / Desktop) */
 .reviews-grid-container {
-  max-width: 72rem;
+  width: 100%;
+  max-width: 80rem;
   margin-left: auto;
   margin-right: auto;
   margin-top: 2rem;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 @media (min-width: 640px) {
@@ -115,8 +151,8 @@
 
 /* Card individual do Álbum */
 .review-album-card {
-  background-color: rgba(24, 24, 27, 0.6);
-  border: 1px solid rgba(39, 39, 42, 0.8);
+  background-color: var(--card);
+  border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 0.85rem;
   display: flex;
@@ -124,13 +160,13 @@
   justify-content: space-between;
   text-decoration: none;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
 }
 
 .review-album-card:hover {
-  border-color: rgba(59, 130, 246, 0.5);
+  border-color: var(--primary);
   transform: translateY(-3px);
-  box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 10px 20px -5px rgba(124, 58, 237, 0.15);
 }
 
 .review-album-cover {
@@ -139,7 +175,7 @@
   width: 100%;
   border-radius: 0.75rem;
   overflow: hidden;
-  background-color: #27272a;
+  background-color: var(--muted);
   margin-bottom: 0.75rem;
 }
 
@@ -162,26 +198,26 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 9999px;
-  background-color: rgba(18, 18, 21, 0.95);
-  border: 2px solid #3b82f6;
+  background-color: var(--card);
+  border: 2px solid var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(4px);
 }
 
 .review-card-score-number {
   font-size: 0.75rem;
   font-weight: 900;
-  color: #ffffff;
+  color: var(--foreground);
   line-height: 1;
 }
 
 .review-album-title {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--foreground);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -189,27 +225,27 @@
 }
 
 .review-album-card:hover .review-album-title {
-  color: #3b82f6;
+  color: var(--primary);
 }
 
 .review-album-artist {
   font-size: 0.75rem;
-  color: #a1a1aa;
+  color: var(--muted-foreground);
 }
 
 .review-card-footer {
   margin-top: 0.75rem;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(39, 39, 42, 0.6);
+  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.6875rem;
-  color: #71717a;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
 }
 
 .review-card-action {
-  color: #3b82f6;
+  color: var(--primary);
   font-weight: 600;
 }
 
@@ -217,11 +253,10 @@
   text-decoration: underline;
 }
 
-/* =================================================================
-   PAGINAÇÃO
-   ================================================================= */
+/* Paginação */
 .pagination-container {
-  max-width: 72rem;
+  width: 100%;
+  max-width: 80rem;
   margin: 3rem auto 1rem auto;
   display: flex;
   align-items: center;
@@ -233,20 +268,20 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.5rem 1rem;
-  background-color: rgba(24, 24, 27, 0.8);
-  border: 1px solid rgba(39, 39, 42, 0.9);
+  padding: 0.65rem 1.25rem;
+  background-color: var(--card);
+  border: 1px solid var(--border);
   border-radius: 9999px;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--foreground);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .pagination-button:hover:not(:disabled) {
-  background-color: rgba(39, 39, 42, 0.9);
-  border-color: var(--primary, #3b82f6);
+  background-color: var(--muted);
+  border-color: var(--primary);
   transform: translateY(-1px);
 }
 
@@ -257,23 +292,23 @@
 
 .pagination-info {
   font-size: 0.875rem;
-  color: #a1a1aa;
+  color: var(--muted-foreground);
 }
 
-/* =================================================================
-   BARRA DE FILTROS BÁSICOS
-   ================================================================= */
+/* Barra de Filtros Adicionais */
 .reviews-filter-bar {
-  max-width: 72rem;
+  width: 100%;
+  max-width: 80rem;
   margin: 1.5rem auto 0 auto;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  background-color: rgba(24, 24, 27, 0.4);
-  border: 1px solid rgba(39, 39, 42, 0.7);
+  background-color: var(--card);
+  border: 1px solid var(--border);
   border-radius: 0.875rem;
   padding: 1rem 1.25rem;
   backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
 @media (min-width: 768px) {
@@ -285,13 +320,13 @@
 }
 
 .reviews-select-filter {
-  background-color: rgba(9, 9, 11, 0.8);
-  border: 1px solid rgba(39, 39, 42, 0.9);
+  background-color: var(--muted);
+  border: 1px solid var(--border);
   border-radius: 9999px;
-  padding: 0.4rem 1rem;
-  font-size: 0.75rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.9375rem;
   font-weight: 500;
-  color: #e4e4e7;
+  color: var(--foreground);
   outline: none;
   cursor: pointer;
   transition: border-color 0.2s;
@@ -299,68 +334,23 @@
 
 .reviews-select-filter:hover,
 .reviews-select-filter:focus {
-  border-color: var(--primary, #3b82f6);
+  border-color: var(--primary);
 }
 
-/* =================================================================
-   PADRÃO GLOBAL DE ALINHAMENTO E TAMANHO PARA AS PÁGINAS
-   ================================================================= */
-.page-container {
-  max-width: 72rem;
-  margin: 0 auto;
-  min-height: calc(100vh - 4rem);
-  padding: 2.5rem 1rem 4rem 1rem;
-  color: #ffffff;
-}
-
-@media (min-width: 768px) {
-  .page-container {
-    padding: 2.5rem 1.5rem 4rem 1.5rem;
-  }
-}
-
-.page-header-wrapper {
-  border-bottom: 1px solid rgba(39, 39, 42, 0.8);
-  padding-bottom: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.page-title {
-  font-size: 2rem;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  letter-spacing: -0.025em;
-}
-
-.page-subtitle {
-  font-size: 0.875rem;
-  color: #a1a1aa;
-  margin-top: 0.35rem;
-}
-
-.section-heading {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-/* =================================================================
-   GRADE DE GÊNEROS E RITMOS (Com Emojis - YouTube Music Style)
-   ================================================================= */
+/* Grade de Gêneros Estilo YouTube Music */
 .genre-grid-section {
-  margin-bottom: 2.5rem;
+  width: 100%;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 2rem;
 }
 
 .genre-cards-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
+  width: 100%;
 }
 
 @media (min-width: 640px) {
@@ -379,8 +369,8 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background-color: #18181b;
-  border: 1px solid rgba(39, 39, 42, 0.8);
+  background-color: var(--card);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   padding: 0.85rem 1rem;
   cursor: pointer;
@@ -390,15 +380,15 @@
 }
 
 .genre-card-item:hover {
-  background-color: #27272a;
-  border-color: #52525b;
+  background-color: var(--muted);
+  border-color: var(--ring);
   transform: translateY(-2px);
 }
 
 .genre-card-item.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(24, 24, 27, 0.8) 100%);
-  border-color: #3b82f6;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  background-color: var(--muted);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
 }
 
 .genre-card-emoji {
@@ -409,7 +399,7 @@
 .genre-card-name {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--foreground);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

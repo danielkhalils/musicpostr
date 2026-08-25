@@ -149,14 +149,14 @@ export function ReviewsPage() {
 
   return (
     <div className="page-container">
-      <div className="page-header-wrapper flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="page-header-wrapper">
         <div>
-          <h1 className="page-title text-white">
-            <Award className="h-8 w-8 text-white stroke-[2.5]" /> Avaliações da Comunidade
+          <h1 className="page-title">
+            <Award className="h-8 w-8 text-primary stroke-[2.5]" /> Avaliações da Comunidade
           </h1>
           <p className="page-subtitle">
             Explore álbuns, utilize os filtros por ano, gênero e gravadora para refinar suas descobertas. 
-            {totalResults > 0 && <span className="ml-2 text-xs text-zinc-500">({totalResults} resultados encontrados)</span>}
+            {totalResults > 0 && <span className="ml-2 text-xs text-muted-foreground">({totalResults} resultados encontrados)</span>}
           </p>
         </div>
 
@@ -173,7 +173,7 @@ export function ReviewsPage() {
         </div>
       </div>
 
-      {/* Seção de Gêneros em Grade com Emojis (Integrada nos Filtros) */}
+      {/* Seção de Gêneros em Grade com Emojis */}
       <div className="genre-grid-section mb-6">
         <h2 className="section-heading mb-3">Filtrar por Momento ou Gênero</h2>
         <div className="genre-cards-grid">
@@ -192,8 +192,8 @@ export function ReviewsPage() {
 
       {/* Painel de Filtros Secundários (Ano e Gravadora) */}
       <div className="reviews-filter-bar mb-8">
-        <div className="flex items-center gap-2 text-xs font-semibold text-white">
-          <Filter className="h-4 w-4 text-white" /> Filtros Adicionais:
+        <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+          <Filter className="h-4 w-4 text-primary" /> Filtros Adicionais:
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
@@ -244,8 +244,8 @@ export function ReviewsPage() {
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
       ) : filteredAlbums.length === 0 ? (
-        <div className="flex flex-col items-center justify-center min-h-[30vh] text-zinc-500 gap-3">
-          <Music className="h-12 w-12 text-zinc-700" />
+        <div className="flex flex-col items-center justify-center min-h-[30vh] text-muted-foreground gap-3">
+          <Music className="h-12 w-12 text-muted-foreground opacity-50" />
           <p>Nenhum álbum encontrado com os filtros selecionados.</p>
         </div>
       ) : (
@@ -265,7 +265,7 @@ export function ReviewsPage() {
                         alt={album.title}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-zinc-600">
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                         <Music className="h-8 w-8" />
                       </div>
                     )}
@@ -280,17 +280,17 @@ export function ReviewsPage() {
                   </h3>
                   
                   <p className="review-album-artist flex items-center gap-1.5 mt-1">
-                    <User className="h-3 w-3 text-zinc-500 flex-shrink-0" />
+                    <User className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                     <span className="truncate">{album.artist.name}</span>
                   </p>
 
-                  <div className="mt-2 space-y-1 text-[11px] text-zinc-400">
+                  <div className="mt-2 space-y-1 text-[11px] text-muted-foreground">
                     <p className="flex items-center gap-1.5 truncate">
-                      <Building2 className="h-3 w-3 text-zinc-500 flex-shrink-0" />
+                      <Building2 className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                       <span className="truncate" title={album.label}>{album.label}</span>
                     </p>
                     <p className="flex items-center gap-1.5">
-                      <Calendar className="h-3 w-3 text-zinc-500 flex-shrink-0" />
+                      <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                       <span>{album.release_date?.substring(0, 4) || 'Desconhecido'} ({album.genreName})</span>
                     </p>
                   </div>
@@ -315,7 +315,7 @@ export function ReviewsPage() {
             </button>
 
             <span className="pagination-info">
-              Página <strong className="text-white">{currentPage}</strong>
+              Página <strong className="text-foreground">{currentPage}</strong>
             </span>
 
             <button
