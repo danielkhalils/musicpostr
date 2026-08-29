@@ -14,6 +14,7 @@ import { IdolsPage } from "./pages/Profile/IdolsPage";
 import { ListsPage } from "./pages/Profile/ListsPage";
 import { HomeFeedPage } from "./pages/Home/HomeFeedPage";
 import { Navbar } from "./components/Navbar/Navbar";
+import { AuthPage } from "./components/Login/AuthPage";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/feed" element={<HomeFeedPage />} />
+            <Route path="/login" element={<AuthPage />} />
             <Route path="/artistas" element={<ArtistsPage />} />
             <Route path="/artista/:id" element={<ArtistDetail />} />
             <Route path="/album/:id" element={<AlbumDetails />} />
