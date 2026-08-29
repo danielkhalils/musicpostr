@@ -12,9 +12,9 @@ import { FriendsPage } from "./pages/Profile/FriendsPage";
 import { IdolsPage } from "./pages/Profile/IdolsPage";
 import { ListsPage } from "./pages/Profile/ListsPage";
 import { HomeFeedPage } from "./pages/Home/HomeFeedPage";
-import { Navbar } from "./components/Navbar/Navbar";
 import { AuthPage } from "./components/Login/AuthPage";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Navbar } from "./components/Navbar/Navbar";
 
 function App() {
   return (
