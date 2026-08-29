@@ -14,7 +14,7 @@ import { ListsPage } from "./pages/Profile/ListsPage";
 import { HomeFeedPage } from "./pages/Home/HomeFeedPage";
 import { AuthPage } from "./components/Login/AuthPage";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Navbar } from "./components/Navbar/NavbarTemp";
+import { Navbar } from "./components/Navbar/Navbar";
 
 function App() {
   return (
