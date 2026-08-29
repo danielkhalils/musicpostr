@@ -1,5 +1,4 @@
 import HomePage from "./pages/Home/HomePage";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ArtistsPage } from "./pages/Artists/ArtistsPage";
 import { ArtistDetail } from "./pages/Artists/ArtistDetails/ArtistDetail";
 import { AlbumDetails } from "./pages/Artists/AlbumDetails/AlbumDetails";
@@ -15,6 +14,7 @@ import { ListsPage } from "./pages/Profile/ListsPage";
 import { HomeFeedPage } from "./pages/Home/HomeFeedPage";
 import { Navbar } from "./components/Navbar/Navbar";
 import { AuthPage } from "./components/Login/AuthPage";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 function App() {
   return (
