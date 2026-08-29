@@ -21,7 +21,7 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
         <Navbar />
-        {/* Área de conteúdo principal */}
+        {/* Área de conteúdo principal  */}
         <main>
           <Routes>
             <Route path="/" element={<HomePage />} />
