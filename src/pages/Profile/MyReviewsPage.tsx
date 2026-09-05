@@ -16,19 +16,19 @@ interface UserReview {
 export function MyReviewsPage() {
   const [reviews, setReviews] = useState<UserReview[]>([
     {
-      id: 1,
+      id: 7446312,
       albumTitle: "THIS IS... ICONA POP",
       artistName: "Icona Pop",
-      coverUrl: "https://api.deezer.com/album/7446312/image",
+      coverUrl: "https://cdn-images.dzcdn.net/images/cover/260414611d49b97c59e99d54d2f80a03/500x500-000000-80-0-0.jpg",
       rating: 10,
       comment: "Uma obra-prima absoluta de design sonoro e atmosferas.",
       date: "24 de Mai, 2026"
     },
     {
-      id: 2,
+      id: 231552772,
       albumTitle: "SOUR",
       artistName: "Olivia Rodrigo",
-      coverUrl: "https://api.deezer.com/album/1002561451/image",
+      coverUrl: "https://cdn-images.dzcdn.net/images/cover/e68da86fd7976135c2d2d1715afaef7c/500x500-000000-80-0-0.jpg",
       rating: 9,
       comment: "Letras marcantes e produções impecáveis do início ao fim.",
       date: "18 de Mai, 2026"
@@ -41,14 +41,14 @@ export function MyReviewsPage() {
 
   return (
     <div className="page-container pb-12">
-      <div className="page-header-wrapper">
-        <Link to="/perfil" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mb-3 transition-colors">
+      <div className="mb-8">
+        <Link to="/perfil" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2 transition-colors">
           <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Perfil
         </Link>
-        <h1 className="page-title">
-          <Star className="h-8 w-8 text-primary fill-primary" /> Minhas Avaliações
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Star className="h-6 w-6 text-primary fill-primary" /> Minhas Avaliações
         </h1>
-        <p className="page-subtitle">
+        <p className="text-xs text-muted-foreground mt-1">
           Gerencie, edite ou remova as notas e opiniões que você compartilhou na comunidade.
         </p>
       </div>
