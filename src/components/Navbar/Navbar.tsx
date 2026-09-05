@@ -133,7 +133,9 @@ export function Navbar() {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem className="text-red-600 focus:bg-red-50 focus:text-red-700 dark:text-red-400 dark:focus:bg-red-950/50 dark:focus:text-red-300 cursor-pointer">
-                Sair
+                <Link to="/login" className="w-full">
+                  Sair
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -16,8 +16,8 @@ export function FavoritesPage() {
   const isVisiting = Boolean(username);
 
   const [favorites] = useState<FavoriteAlbum[]>([
-    { id: 1, title: 'The Dark Side of the Moon', artist: 'Pink Floyd', cover: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=400', rating: 10 },
-    { id: 2, title: 'After Hours', artist: 'The Weeknd', cover: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=400', rating: 9.5 },
+    { id: 12114240, title: 'The Dark Side of the Moon', artist: 'Pink Floyd', cover: 'https://cdn-images.dzcdn.net/images/cover/e635a8510c1a74bc089b3566ebbb9cb8/500x500-000000-80-0-0.jpg', rating: 10 },
+    { id: 137272602, title: 'After Hours', artist: 'The Weeknd', cover: 'https://cdn-images.dzcdn.net/images/cover/f520bf0be2e3cfc476824e75d20a164a/500x500-000000-80-0-0.jpg', rating: 9.5 },
   ]);
 
   return (
