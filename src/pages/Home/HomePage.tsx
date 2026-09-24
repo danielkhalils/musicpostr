@@ -1,124 +1,448 @@
-import { Link } from 'react-router-dom';
-import { Search, Trophy, Star, ArrowRight, Flame, Disc3 } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import './HomePage.css';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import {
+  Star,
+  Play,
+  Disc,
+  Sparkles,
+  TrendingUp,
+  ArrowRight,
+  ShieldCheck,
+  Mail,
+  Loader2,
+  Newspaper,
+  ExternalLink,
+  Flame,
+  Award,
+  Music,
+  Compass,
+} from "lucide-react";
+import { Button } from "../../components/ui/button";
+import "./HomePage.css";
 
-export function HomePage() {
+interface Album {
+  id: number;
+  title: string;
+  cover_xl?: string;
+  cover_big?: string;
+  cover_medium?: string;
+  release_date?: string;
+  artist: {
+    name: string;
+  };
+}
+
+interface Track {
+  id: number;
+  title: string;
+  duration: number;
+  preview: string;
+  artist: {
+    name: string;
+  };
+  album: {
+    title: string;
+    cover_medium: string;
+  };
+}
+
+interface NewsArticle {
+  title: string;
+  link: string;
+  pubDate: string;
+  author: string;
+  thumbnail: string;
+  description: string;
+}
+
+const GENRES = [
+  { id: "pop", name: "Pop", color: "from-pink-500 to-rose-600" },
+  { id: "rock", name: "Rock", color: "from-amber-600 to-red-700" },
+  { id: "hip-hop", name: "Hip-Hop", color: "from-purple-600 to-indigo-800" },
+  { id: "electronic", name: "Eletrônica", color: "from-cyan-500 to-blue-600" },
+  { id: "indie", name: "Indie / Alternativo", color: "from-emerald-500 to-teal-700" },
+  { id: "r-b", name: "R&B", color: "from-orange-500 to-amber-600" },
+];
+
+export default function HomePage() {
+  const [highlights, setHighlights] = useState<Album[]>([]);
+  const [popularAlbums, setPopularAlbums] = useState<Album[]>([]);
+  const [newReleases, setNewReleases] = useState<Album[]>([]);
+  const [topRatedAlbums, setTopRatedAlbums] = useState<Album[]>([]);
+  const [topTracks, setTopTracks] = useState<Track[]>([]);
+  const [news, setNews] = useState<NewsArticle[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    async function fetchHomeData() {
+      setIsLoading(true);
+      try {
+        const [releasesRes, tracksRes, newsRes] = await Promise.all([
+          fetch("/api/deezer/chart/0/albums?limit=30"),
+          fetch("/api/deezer/chart/0/tracks").catch(() => null),
+          fetch("/api/news").catch(() => null),
+        ]);
+
+        const releasesData = await releasesRes.json();
+        const tracksData = tracksRes ? await tracksRes.json() : null;
+
+        if (releasesData && releasesData.data) {
+          const albums = releasesData.data;
+          setHighlights(albums.slice(0, 5));
+          setPopularAlbums(albums.slice(5, 13));
+          setNewReleases(
+            albums.slice(13, 21).length > 0
+              ? albums.slice(13, 21)
+              : albums.slice(5, 13)
+          );
+          setTopRatedAlbums([...albums].reverse().slice(0, 8)); // Simulação de bem avaliados
+        }
+
+        if (tracksData && tracksData.data) {
+          setTopTracks(tracksData.data.slice(0, 6));
+        }
+
+        if (newsRes && newsRes.ok) {
+          const newsData = await newsRes.json();
+          if (newsData && newsData.articles) {
+            setNews(newsData.articles.slice(0, 3));
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados da Home:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchHomeData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const currentAlbum = highlights[activeIndex] || popularAlbums[0];
+
   return (
-    <div className="home-container">
-      
-      {/* Hero Section */}
-      <div className="home-hero-wrapper">
-        <div className="home-hero-radial" />
-        
-        <div className="home-hero-content">
-          <div className="home-modern-badge">
-            <div className="badge-glow" />
-            <span className="badge-icon-wrapper">
-              <Flame className="h-4 w-4 text-orange-500 animate-pulse" />
-            </span>
-            <span className="badge-text">O novo padrão para crítica e avaliação musical</span>
+    <div className="home-page-container">
+      {/* 1. HERO BANNER DE DESTAQUES */}
+      {currentAlbum && (
+        <section className="hero-banner-section">
+          <div
+            className="hero-backdrop"
+            style={{
+              backgroundImage: `url(${currentAlbum.cover_xl || currentAlbum.cover_big})`,
+            }}
+          />
+          <div className="hero-gradient-overlay" />
+
+          <div className="hero-content-wrapper">
+            <div className="hero-info-container">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" /> Destaque da Crítica
+                </span>
+              </div>
+
+              <h1 className="hero-title">{currentAlbum.title}</h1>
+              <p className="hero-artist">
+                por{" "}
+                <span className="text-primary font-semibold">
+                  {currentAlbum.artist?.name}
+                </span>
+              </p>
+
+              <div className="hero-metadata">
+                <span className="flex items-center gap-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2.5 py-1 rounded-md text-xs font-bold">
+                  <Star className="h-3.5 w-3.5 fill-amber-500" /> 9.4 / 10 (Média)
+                </span>
+                <span>•</span>
+                <span>{currentAlbum.release_date?.substring(0, 4) || "2026"}</span>
+              </div>
+
+              <div className="hero-actions">
+                <Link to={`/album/${currentAlbum.id}`}>
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 py-2.5 text-xs font-bold gap-2 shadow-lg">
+                    <Play className="h-4 w-4 fill-primary-foreground" /> Ouvir e Avaliar
+                  </Button>
+                </Link>
+                <Link to="/reviews">
+                  <Button
+                    variant="outline"
+                    className="rounded-full px-6 py-2.5 text-xs font-semibold border-border bg-card/40 backdrop-blur-md text-foreground hover:bg-card"
+                  >
+                    Ver Comunidade
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            <div className="hero-thumbnails-bar">
+              <div className="hero-thumbnails-track">
+                {highlights.map((item, index) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveIndex(index)}
+                    className={`hero-thumb-card ${activeIndex === index ? "active" : ""}`}
+                  >
+                    <img src={item.cover_medium || item.cover_big} alt={item.title} />
+                    <div className="hero-thumb-overlay">
+                      <span className="text-[10px] font-bold text-white truncate">
+                        {item.title}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 2. ÁLBUNS POPULARES */}
+      <section className="content-section max-w-7xl mx-auto px-4 py-10 w-full">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-bold text-foreground">Álbuns Populares do Momento</h2>
+          </div>
+          <Link to="/rankings" className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline">
+            Ver ranking completo <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-5">
+          {popularAlbums.map((album) => (
+            <Link key={album.id} to={`/album/${album.id}`} className="popular-album-card group">
+              <div className="popular-cover-wrapper">
+                <img src={album.cover_big || album.cover_medium} alt={album.title} />
+                <div className="popular-rating-badge">★ 9.2</div>
+              </div>
+              <h3 className="popular-title group-hover:text-primary">{album.title}</h3>
+              <p className="popular-artist">{album.artist?.name}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* 3. LANÇAMENTOS RECENTES */}
+      {newReleases.length > 0 && (
+        <section className="content-section max-w-7xl mx-auto px-4 py-6 w-full">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Flame className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-bold text-foreground">Novos Lançamentos</h2>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-5">
+          {newReleases.map((album) => (
+            <Link key={album.id} to={`/album/${album.id}`} className="popular-album-card group">
+              <div className="popular-cover-wrapper">
+                <img src={album.cover_big || album.cover_medium} alt={album.title} />
+                <span className="absolute bottom-2 left-2 bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
+                  NOVO
+                </span>
+              </div>
+              <h3 className="popular-title group-hover:text-primary">{album.title}</h3>
+              <p className="popular-artist">{album.artist?.name}</p>
+            </Link>
+          ))}
+        </div>
+        </section>
+      )}
+
+      {/* 4. MAIS BEM AVALIADOS PELA COMUNIDADE */}
+      <section className="content-section max-w-7xl mx-auto px-4 py-6 w-full">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-amber-500" />
+            <h2 className="text-xl font-bold text-foreground">Mais Bem Avaliados (Aclamados)</h2>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-5">
+          {topRatedAlbums.map((album) => (
+            <Link key={album.id} to={`/album/${album.id}`} className="popular-album-card group">
+              <div className="popular-cover-wrapper">
+                <img src={album.cover_big || album.cover_medium} alt={album.title} />
+                <div className="popular-rating-badge bg-amber-500 text-black font-extrabold">★ 9.8</div>
+              </div>
+              <h3 className="popular-title group-hover:text-primary">{album.title}</h3>
+              <p className="popular-artist">{album.artist?.name}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* 5. GÊNEROS E ESTILOS */}
+      <section className="content-section max-w-7xl mx-auto px-4 py-8 w-full">
+        <div className="flex items-center gap-2 mb-6">
+          <Compass className="h-5 w-5 text-primary" />
+          <h2 className="text-xl font-bold text-foreground">Explorar por Gênero</h2>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+          {GENRES.map((genre) => (
+            <Link
+              key={genre.id}
+              to={`/search?genre=${genre.id}`}
+              className={`h-28 rounded-2xl p-4 bg-gradient-to-br ${genre.color} flex flex-col justify-between shadow-md hover:scale-105 transition-transform text-white`}
+            >
+              <span className="font-bold text-sm tracking-wide">{genre.name}</span>
+              <Music className="h-6 w-6 self-end opacity-80" />
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* 6. TOP MÚSICAS GLOBAIS */}
+      {topTracks.length > 0 && (
+        <section className="content-section max-w-7xl mx-auto px-4 py-6 w-full">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <Music className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-bold text-foreground">Top Músicas</h2>
+            </div>
           </div>
 
-          <h1 className="home-title">
-            Descubra, avalie e discuta os <span className="home-title-gradient">melhores álbuns</span>
-          </h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {topTracks.map((track, idx) => (
+              <div key={track.id} className="flex items-center justify-between p-3 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-bold text-muted-foreground w-4 text-center">
+                    {idx + 1}
+                  </span>
+                  <img src={track.album?.cover_medium} alt={track.title} className="w-12 h-12 rounded-lg object-cover" />
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground line-clamp-1">{track.title}</h4>
+                    <p className="text-[11px] text-muted-foreground">{track.artist?.name}</p>
+                  </div>
+                </div>
+                <Link to={`/album/${track.id}`}>
+                  <Button size="icon" variant="ghost" className="rounded-full h-8 w-8 hover:text-primary">
+                    <Play className="h-4 w-4 fill-current" />
+                  </Button>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-          <p className="home-subtitle">
-            Explore discografias completas, mergulhe em informações detalhadas de artistas e registre suas opiniões sobre os lançamentos que definem a cultura musical.
-          </p>
+      {/* 7. SEÇÃO DE NOTÍCIAS DA CRÍTICA MUSICAL */}
+      {news.length > 0 && (
+        <section className="content-section max-w-7xl mx-auto px-4 py-8 w-full">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <Newspaper className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-bold text-foreground">Crítica e Notícias Globais</h2>
+            </div>
+          </div>
 
-          <div className="home-actions">
-            <Link to="/artistas">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white font-medium rounded-full px-8 shadow-lg shadow-primary/20 transition-all hover:scale-105">
-                <Search className="h-4 w-4 mr-2" /> Buscar Artistas
-              </Button>
-            </Link>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {news.map((item, index) => (
+              <a
+                key={index}
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-card border border-border p-4 rounded-2xl hover:border-primary transition-all group flex flex-col justify-between"
+              >
+                <div>
+                  {item.thumbnail && (
+                    <div className="w-full h-40 rounded-xl overflow-hidden mb-3 bg-muted">
+                      <img
+                        src={item.thumbnail}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                    {item.description}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/60 text-[11px] text-muted-foreground">
+                  <span>{item.pubDate.substring(0, 10)}</span>
+                  <span className="flex items-center gap-1 text-primary font-semibold group-hover:underline">
+                    Ler matéria <ExternalLink className="h-3 w-3" />
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
-            <Link to="/rankings">
-              <Button size="lg" variant="outline" className="border-zinc-300 bg-white/50 hover:bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:bg-zinc-900 dark:text-zinc-200 font-medium rounded-full px-8 backdrop-blur-sm transition-all hover:scale-105">
-                <Trophy className="h-4 w-4 mr-2 text-amber-400" /> Ver Rankings
-              </Button>
-            </Link>
+      {/* 8. FOOTER INSTITUCIONAL */}
+      <footer className="site-footer">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black">
+                <Disc className="h-5 w-5" />
+              </div>
+              <span className="font-extrabold text-foreground text-lg tracking-tight">
+                Musicpostr
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Sua rede social definitiva para diário de escuta, críticas sonoras e compartilhamento de notas musicais.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="footer-heading">Plataforma</h4>
+            <ul className="footer-links">
+              <li><Link to="/feed">Feed da Comunidade</Link></li>
+              <li><Link to="/rankings">Rankings e Notas</Link></li>
+              <li><Link to="/artistas">Artistas em Alta</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="footer-heading">Legal & Privacidade</h4>
+            <ul className="footer-links">
+              <li><a href="#sobre" onClick={(e) => e.preventDefault()}>Sobre o Musicpostr</a></li>
+              <li><a href="#termos" onClick={(e) => e.preventDefault()}>Termos de Serviço</a></li>
+              <li><a href="#privacidade" onClick={(e) => e.preventDefault()}>Política de Privacidade</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="footer-heading">Contato & Suporte</h4>
+            <ul className="footer-links">
+              <li>
+                <a href="#contato" onClick={(e) => e.preventDefault()} className="flex items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5" /> suporte@musicpostr.com
+                </a>
+              </li>
+              <li><span className="text-[11px] text-muted-foreground">Versão 1.2.0-beta</span></li>
+            </ul>
           </div>
         </div>
-      </div>
 
-      {/* Seção de Atalhos / Recursos */}
-      <div className="home-features-container">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
-            Explore a plataforma
-          </h2>
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
-            Tudo o que você precisa para acompanhar o mundo da música em um só lugar
-          </p>
+        <div className="footer-bottom">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+            <p>© 2026 Musicpostr. Todos os direitos reservados.</p>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Ambiente Seguro
+              </span>
+            </div>
+          </div>
         </div>
-
-        <div className="home-cards-grid">
-          
-          {/* Card 1: Artistas (Com Disc3 roxo) */}
-          <Link to="/artistas" className="home-feature-card home-artist-card">
-            <div className="home-card-glow artist-glow" />
-            <div>
-              <div className="home-card-icon-wrapper artist-icon">
-                <Disc3 className="h-6 w-6 text-purple-400" />
-              </div>
-              <h3 className="home-card-title">
-                Artistas e Discografias
-              </h3>
-              <p className="home-card-desc">
-                Navegue por milhares de artistas, confira fotos em alta resolução, álbuns de estúdio, EPs e singles oficiais.
-              </p>
-            </div>
-            <div className="home-card-footer artist-link">
-              Explorar artistas <ArrowRight className="h-4 w-4" />
-            </div>
-          </Link>
-
-          {/* Card 2: Rankings */}
-          <Link to="/rankings" className="home-feature-card ranking-card">
-            <div className="home-card-glow ranking-glow" />
-            <div>
-              <div className="home-card-icon-wrapper ranking-icon">
-                <Trophy className="h-6 w-6" />
-              </div>
-              <h3 className="home-card-title">
-                Rankings de Álbuns
-              </h3>
-              <p className="home-card-desc">
-                Descubra quais são os discos mais aclamados, as notas da comunidade e os álbuns que marcaram época.
-              </p>
-            </div>
-            <div className="home-card-footer ranking-link">
-              Ver classificações <ArrowRight className="h-4 w-4" />
-            </div>
-          </Link>
-
-          {/* Card 3: Reviews */}
-          <Link to="/reviews" className="home-feature-card review-card">
-            <div className="home-card-glow review-glow" />
-            <div>
-              <div className="home-card-icon-wrapper review-icon">
-                <Star className="h-6 w-6" />
-              </div>
-              <h3 className="home-card-title">
-                Reviews e Críticas
-              </h3>
-              <p className="home-card-desc">
-                Leia análises profundas, escreva suas próprias avaliações e compartilhe sua perspectiva sobre faixas e álbuns.
-              </p>
-            </div>
-            <div className="home-card-footer review-link">
-              Ler reviews <ArrowRight className="h-4 w-4" />
-            </div>
-          </Link>
-
-        </div>
-      </div>
-
+      </footer>
     </div>
   );
 }
-
-export default HomePage;
