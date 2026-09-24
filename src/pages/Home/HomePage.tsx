@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   Star,
@@ -16,6 +16,8 @@ import {
   Award,
   Music,
   Compass,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import "./HomePage.css";
@@ -74,13 +76,27 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Ref para controlar a rolagem horizontal das Top Músicas (estilo YouTube Music)
+  const tracksScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollTracks = (direction: "left" | "right") => {
+    if (tracksScrollRef.current) {
+      const { scrollLeft, clientWidth } = tracksScrollRef.current;
+      const scrollAmount = clientWidth * 0.75;
+      tracksScrollRef.current.scrollTo({
+        left: direction === "left" ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
   useEffect(() => {
     async function fetchHomeData() {
       setIsLoading(true);
       try {
         const [releasesRes, tracksRes, newsRes] = await Promise.all([
           fetch("/api/deezer/chart/0/albums?limit=30"),
-          fetch("/api/deezer/chart/0/tracks").catch(() => null),
+          fetch("/api/deezer/chart/0/tracks?limit=20").catch(() => null),
           fetch("/api/news").catch(() => null),
         ]);
 
@@ -100,7 +116,7 @@ export default function HomePage() {
         }
 
         if (tracksData && tracksData.data) {
-          setTopTracks(tracksData.data.slice(0, 6));
+          setTopTracks(tracksData.data.slice(0, 20));
         }
 
         if (newsRes && newsRes.ok) {
@@ -212,8 +228,8 @@ export default function HomePage() {
             <TrendingUp className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-bold text-foreground">Álbuns Populares do Momento</h2>
           </div>
-          <Link to="/rankings" className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline">
-            Ver ranking completo <ArrowRight className="h-3.5 w-3.5" />
+          <Link to="/top-albuns" className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline">
+            Ver lista completa <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
@@ -234,27 +250,30 @@ export default function HomePage() {
       {/* 3. LANÇAMENTOS RECENTES */}
       {newReleases.length > 0 && (
         <section className="content-section max-w-7xl mx-auto px-4 py-6 w-full">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Flame className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-bold text-foreground">Novos Lançamentos</h2>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-5">
-          {newReleases.map((album) => (
-            <Link key={album.id} to={`/album/${album.id}`} className="popular-album-card group">
-              <div className="popular-cover-wrapper">
-                <img src={album.cover_big || album.cover_medium} alt={album.title} />
-                <span className="absolute bottom-2 left-2 bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
-                  NOVO
-                </span>
-              </div>
-              <h3 className="popular-title group-hover:text-primary">{album.title}</h3>
-              <p className="popular-artist">{album.artist?.name}</p>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <Flame className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-bold text-foreground">Novos Lançamentos</h2>
+            </div>
+            <Link to="/rankings?filter=releases" className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline">
+              Ver lista completa <ArrowRight className="h-3.5 w-3.5" />
             </Link>
-          ))}
-        </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-5">
+            {newReleases.map((album) => (
+              <Link key={album.id} to={`/album/${album.id}`} className="popular-album-card group">
+                <div className="popular-cover-wrapper">
+                  <img src={album.cover_big || album.cover_medium} alt={album.title} />
+                  <span className="absolute bottom-2 left-2 bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
+                    NOVO
+                  </span>
+                </div>
+                <h3 className="popular-title group-hover:text-primary">{album.title}</h3>
+                <p className="popular-artist">{album.artist?.name}</p>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 
@@ -265,6 +284,9 @@ export default function HomePage() {
             <Award className="h-5 w-5 text-amber-500" />
             <h2 className="text-xl font-bold text-foreground">Mais Bem Avaliados (Aclamados)</h2>
           </div>
+          <Link to="/rankings?filter=top-rated" className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline">
+            Ver ranking completo <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-5">
@@ -302,7 +324,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. TOP MÚSICAS GLOBAIS */}
+      {/* 6. TOP MÚSICAS GLOBAIS (ESTILO YOUTUBE MUSIC COM BOTÕES DE NAVEGAÇÃO LATERAL) */}
       {topTracks.length > 0 && (
         <section className="content-section max-w-7xl mx-auto px-4 py-6 w-full">
           <div className="flex items-center justify-between mb-6">
@@ -310,28 +332,59 @@ export default function HomePage() {
               <Music className="h-5 w-5 text-primary" />
               <h2 className="text-xl font-bold text-foreground">Top Músicas</h2>
             </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => scrollTracks("left")}
+                className="rounded-full h-8 w-8 bg-card border-border hover:bg-muted"
+                aria-label="Rolar para esquerda"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => scrollTracks("right")}
+                className="rounded-full h-8 w-8 bg-card border-border hover:bg-muted"
+                aria-label="Rolar para direita"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {topTracks.map((track, idx) => (
-              <div key={track.id} className="flex items-center justify-between p-3 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-muted-foreground w-4 text-center">
-                    {idx + 1}
-                  </span>
-                  <img src={track.album?.cover_medium} alt={track.title} className="w-12 h-12 rounded-lg object-cover" />
-                  <div>
-                    <h4 className="text-xs font-bold text-foreground line-clamp-1">{track.title}</h4>
-                    <p className="text-[11px] text-muted-foreground">{track.artist?.name}</p>
+          {/* Container horizontal com scroll oculto e comportamento estilo YouTube Music */}
+          <div
+            ref={tracksScrollRef}
+            className="flex gap-4 overflow-x-auto scrollbar-none pb-2 snap-x snap-mandatory"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {/* Agrupa as 20 músicas em colunas de blocos (ex: 2 linhas por bloco, igual ao YT Music) */}
+            <div className="grid grid-rows-4 grid-flow-col gap-3 min-w-full">
+              {topTracks.map((track, idx) => (
+                <div
+                  key={track.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors w-[300px] sm:w-[350px] snap-start"
+                >
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <span className="text-sm font-bold text-muted-foreground w-5 text-center flex-shrink-0">
+                      {idx + 1}
+                    </span>
+                    <img src={track.album?.cover_medium} alt={track.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                    <div className="overflow-hidden">
+                      <h4 className="text-xs font-bold text-foreground truncate">{track.title}</h4>
+                      <p className="text-[11px] text-muted-foreground truncate">{track.artist?.name}</p>
+                    </div>
                   </div>
+                  <Link to={`/album/${track.id}`} className="flex-shrink-0 ml-2">
+                    <Button size="icon" variant="ghost" className="rounded-full h-8 w-8 hover:text-primary">
+                      <Play className="h-4 w-4 fill-current" />
+                    </Button>
+                  </Link>
                 </div>
-                <Link to={`/album/${track.id}`}>
-                  <Button size="icon" variant="ghost" className="rounded-full h-8 w-8 hover:text-primary">
-                    <Play className="h-4 w-4 fill-current" />
-                  </Button>
-                </Link>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
       )}

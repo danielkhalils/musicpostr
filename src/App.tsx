@@ -15,6 +15,7 @@ import { HomeFeedPage } from "./pages/Home/HomeFeedPage";
 import { AuthPage } from "./components/Login/AuthPage";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Navbar } from "./components/Navbar/Navbar";
+import { TopAlbuns } from "./pages/Sessions/TopAlbuns";
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
             <Route path="/amigos" element={<FriendsPage />} />
             <Route path="/idolos" element={<IdolsPage />} />
             <Route path="/listas" element={<ListsPage />} />
+            <Route path="/top-albuns" element={<TopAlbuns />} />
           </Routes>
         </main>
       </div>
