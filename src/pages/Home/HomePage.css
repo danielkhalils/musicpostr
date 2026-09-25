@@ -1,289 +1,283 @@
 /* =================================================================
-   ESTILOS DA PÁGINA HOME
+   HOME PAGE (Estilo Streaming Hero + Populares + Footer)
    ================================================================= */
 
-.home-container {
+.home-page-container {
   min-height: calc(100vh - 4rem);
   background-color: var(--background);
   color: var(--foreground);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding-bottom: 5rem;
-  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Hero Section */
-.home-hero-wrapper {
+/* --- Hero Banner Imersivo --- */
+.hero-banner-section {
   position: relative;
   width: 100%;
-  overflow: hidden;
-  padding: 5rem 1rem 5rem 1rem;
+  min-height: 38rem;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  background: linear-gradient(
-    to bottom,
-    rgba(59, 130, 246, 0.1),
-    color-mix(in srgb, var(--background) 50%, transparent),
-    var(--background)
-  );
-  border-bottom: 1px solid var(--border);
+  align-items: flex-end;
+  overflow: hidden;
+  padding-bottom: 3.5rem;
 }
 
-@media (min-width: 640px) {
-  .home-hero-wrapper {
-    padding: 5rem 1.5rem;
-  }
-}
-
-.home-hero-radial {
+.hero-backdrop {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.2), transparent, transparent);
-  opacity: 0.6;
+  background-size: cover;
+  background-position: center;
+  filter: blur(8px);
+  transform: scale(1.08);
+  opacity: 0.45;
+  transition: background-image 0.5s ease-in-out;
+}
+
+.hero-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--background) 0%,
+    rgba(0, 0, 0, 0.6) 50%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
   pointer-events: none;
 }
 
-.home-hero-content {
+.hero-content-wrapper {
   position: relative;
-  max-width: 48rem;
+  max-width: 80rem;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  align-items: center;
-}
-
-.home-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  font-weight: 500;
-}
-
-.home-title {
-  font-size: 2.5rem;
-  line-height: 1.1;
-  font-weight: 900;
-  letter-spacing: -0.025em;
-  color: var(--foreground);
-}
-
-@media (min-width: 640px) {
-  .home-title {
-    font-size: 3.75rem;
-  }
-}
-
-.home-subtitle {
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: var(--muted-foreground);
-  max-width: 42rem;
-  margin: 0 auto;
-}
-
-@media (min-width: 640px) {
-  .home-subtitle {
-    font-size: 1.125rem;
-  }
-}
-
-.home-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding-top: 1rem;
-}
-
-/* Seção de Atalhos / Cards */
-.home-features-container {
-  max-width: 72rem;
   width: 100%;
   padding: 0 1rem;
-  margin-top: 4rem;
+  z-index: 2;
 }
 
-@media (min-width: 640px) {
-  .home-features-container {
-    padding: 0 1.5rem;
-  }
+.hero-info-container {
+  max-width: 42rem;
 }
 
-.home-cards-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+.hero-title {
+  font-size: 2.75rem;
+  line-height: 1.1;
+  font-weight: 900;
+  color: var(--foreground);
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
 }
 
 @media (min-width: 768px) {
-  .home-cards-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .hero-title {
+    font-size: 4rem;
   }
 }
 
-.home-feature-card {
-  position: relative;
-  background-color: color-mix(in srgb, var(--card) 80%, transparent);
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  text-decoration: none;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.home-card-glow {
-  position: absolute;
-  right: -1.5rem;
-  bottom: -1.5rem;
-  width: 8rem;
-  height: 8rem;
-  border-radius: 9999px;
-  filter: blur(24px);
-  transition: all 0.3s ease;
-}
-
-/* Comportamento de hover compartilhado por todos os cards */
-.home-feature-card:hover {
-  transform: scale(1.05);
-}
-
-/* Estilização Individual dos Cards e Cores do Disc3 Roxo */
-.home-artist-card:hover { border-color: rgba(168, 85, 247, 0.5); box-shadow: 0 20px 25px -5px rgba(168, 85, 247, 0.05); }
-.artist-glow { background-color: rgba(168, 85, 247, 0.05); }
-.home-artist-card:hover .artist-glow { background-color: rgba(168, 85, 247, 0.12); }
-.artist-icon { background-color: rgba(168, 85, 247, 0.1); }
-.home-artist-card:hover .home-card-title { color: #c084fc; }
-.artist-link { color: #c084fc; }
-
-.ranking-card:hover { border-color: rgba(251, 191, 36, 0.5); box-shadow: 0 20px 25px -5px rgba(251, 191, 36, 0.05); }
-.ranking-glow { background-color: rgba(251, 191, 36, 0.05); }
-.ranking-card:hover .ranking-glow { background-color: rgba(251, 191, 36, 0.12); }
-.ranking-icon { background-color: rgba(251, 191, 36, 0.1); color: #fbbf24; }
-.ranking-card:hover .home-card-title { color: #fbbf24; }
-.ranking-link { color: #fbbf24; }
-
-.review-card:hover { border-color: rgba(16, 185, 129, 0.5); box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.05); }
-.review-glow { background-color: rgba(16, 185, 129, 0.05); }
-.review-card:hover .review-glow { background-color: rgba(16, 185, 129, 0.12); }
-.review-icon { background-color: rgba(16, 185, 129, 0.1); color: #34d399; }
-.review-card:hover .home-card-title { color: #34d399; }
-.review-link { color: #34d399; }
-
-.home-card-icon-wrapper {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.25rem;
-  transition: transform 0.3s ease;
-}
-
-.home-feature-card:hover .home-card-icon-wrapper {
-  transform: scale(1.1);
-}
-
-.home-card-title {
+.hero-artist {
   font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--foreground);
-  margin-bottom: 0.5rem;
-  transition: color 0.2s;
-}
-
-.home-card-desc {
-  font-size: 0.875rem;
-  line-height: 1.6;
+  font-weight: 600;
   color: var(--muted-foreground);
+  margin-bottom: 1rem;
 }
 
-.home-card-footer {
-  margin-top: 1.5rem;
+.hero-description {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--foreground);
+  opacity: 0.9;
+  margin-bottom: 1.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hero-metadata {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   font-size: 0.875rem;
-  font-weight: 500;
+  color: var(--muted-foreground);
+  margin-bottom: 1.75rem;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Barra de Miniaturas (Carrossel inferior do Hero) */
+.hero-thumbnails-bar {
+  display: none;
+  margin-top: 2.5rem;
+  justify-content: flex-end;
+  z-index: 3;
+}
+
+@media (min-width: 1024px) {
+  .hero-thumbnails-bar {
+    display: flex;
+  }
+}
+
+.hero-thumbnails-track {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.hero-thumb-card {
+  position: relative;
+  width: 6rem;
+  height: 4rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  background-color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.hero-thumb-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transition: transform 0.2s ease;
 }
 
-.home-feature-card:hover .home-card-footer {
-  transform: translateX(4px);
+.hero-thumb-card:hover img {
+  transform: scale(1.05);
 }
 
-/* Gradiente moderno para o título principal da Home */
-.home-title-gradient {
-  background: linear-gradient(135deg, #c084fc 0%, #3b82f6 50%, #ec4899 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
+.hero-thumb-card.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
 }
 
-/* =================================================================
-   BADGE MODERNO (HERO SECTION)
-   ================================================================= */
-.home-modern-badge {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.375rem 1rem 0.375rem 0.5rem;
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--card) 75%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(249, 115, 22, 0.15);
-  backdrop-filter: blur(12px);
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.home-modern-badge:hover {
-  border-color: rgba(249, 115, 22, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.6), 0 0 20px rgba(249, 115, 22, 0.25);
-}
-
-/* Efeito de luz sutil no fundo do badge */
-.badge-glow {
+.hero-thumb-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(249, 115, 22, 0.1), rgba(168, 85, 247, 0.1));
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.badge-icon-wrapper {
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 50%;
-  background-color: rgba(249, 115, 22, 0.12);
-  border: 1px solid rgba(249, 115, 22, 0.3);
+  align-items: flex-end;
+  padding: 0.35rem 0.5rem;
 }
 
-.badge-text {
+
+/* --- Seção de Álbuns Populares --- */
+.popular-album-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.popular-album-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08);
+}
+
+.popular-cover-wrapper {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background-color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+.popular-cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.popular-album-card:hover .popular-cover-wrapper img {
+  transform: scale(1.05);
+}
+
+.popular-rating-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  color: #f59e0b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.popular-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+
+.popular-artist {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.15rem;
+}
+
+
+/* --- Footer Institucional --- */
+.site-footer {
+  margin-top: auto;
+  background-color: var(--card);
+  border-top: 1px solid var(--border);
+  padding-top: 3rem;
+  padding-bottom: 1.5rem;
+}
+
+.footer-heading {
   font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  background: linear-gradient(to right, var(--foreground), var(--muted-foreground));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  color: var(--foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.footer-links a {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: var(--foreground);
+}
+
+.footer-bottom {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
 }
