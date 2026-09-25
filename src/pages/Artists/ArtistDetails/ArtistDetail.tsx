@@ -122,7 +122,6 @@ export function ArtistDetail() {
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight drop-shadow-md text-zinc-900 dark:text-white break-words">
               {artistName || "Detalhes do Artista"}
             </h1>
-            {/* Subtítulo corrigido com variável adaptativa para alto contraste em ambos os modos */}
             <p className="text-muted-foreground dark:text-zinc-300 mt-2 text-sm md:text-base drop-shadow font-medium">
               Discografia, álbuns e lançamentos oficiais
             </p>
@@ -131,9 +130,10 @@ export function ArtistDetail() {
       </div>
 
       <div className="artist-main-content">
+
         {/* Seção de Álbuns */}
         {albums.length > 0 && (
-          <div>
+          <div className="mt-12">
             <h2 className="section-title">
               <Disc className="h-6 w-6 text-primary" /> Álbuns de Estúdio
             </h2>
@@ -190,7 +190,7 @@ export function ArtistDetail() {
 
         {/* Seção de EPs e Singles */}
         {epsAndSingles.length > 0 && (
-          <div>
+          <div className="mt-12">
             <h2 className="section-title">
               <Radio className="h-6 w-6 text-primary" /> EPs e Singles
             </h2>

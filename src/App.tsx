@@ -16,10 +16,12 @@ import { AuthPage } from "./components/Login/AuthPage";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Navbar } from "./components/Navbar/Navbar";
 import { TopAlbuns } from "./pages/Sessions/TopAlbuns";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
         <Navbar />
         {/* Área de conteúdo principal  */}
