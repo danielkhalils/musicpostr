@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/deezer/:match*",
-      "destination": "https://api.deezer.com/:match*"
+      "source": "/api/deezer/:path*",
+      "destination": "/api/deezer?path=:path*"
     },
     {
       "source": "/(.*)",
