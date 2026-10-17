@@ -23,17 +23,43 @@ export default async function handler(req, res) {
   const queryString = params.toString();
   const targetUrl = `https://musicbrainz.org/ws/2/${cleanEndpoint}${queryString ? `?${queryString}` : ''}`;
 
-  try {
-    const response = await fetch(targetUrl, {
-      headers: {
-        'User-Agent': 'musicpostr/1.0.0 (https://musicpostr.vercel.app)',
-        'Accept': 'application/json',
-      },
-    });
-    const data = await response.json();
-    return res.status(response.status || 200).json(data);
-  } catch (error) {
-    console.error('Erro no proxy do MusicBrainz:', error);
-    return res.status(500).json({ error: 'Falha ao comunicar com a API do MusicBrainz' });
+  const maxRetries = 2;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(targetUrl, {
+        headers: {
+          'User-Agent': 'MusicPostr/1.0.0 ( contact@musicpostr.vercel.app )',
+          'Accept': 'application/json',
+        },
+      });
+
+      // Se o MusicBrainz responder com 503 (rate limiting ou servidor ocupado), aguarda e tenta de novo
+      if (response.status === 503 && attempt < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        continue;
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        // Cache na borda (Edge Network da Vercel) por 24 horas
+        res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
+        return res.status(200).json(data);
+      }
+
+      // Se continuar 503 ou 429 após as tentativas, retorna lista vazia para fallback suave no cliente
+      if (response.status === 503 || response.status === 429) {
+        return res.status(200).json({ releases: [], count: 0, unavailable: true });
+      }
+
+      const errorText = await response.text();
+      return res.status(response.status).send(errorText);
+    } catch (error) {
+      if (attempt < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        continue;
+      }
+      console.error('Erro no proxy do MusicBrainz:', error);
+      return res.status(200).json({ releases: [], count: 0, error: 'Falha de comunicação com MusicBrainz' });
+    }
   }
 }

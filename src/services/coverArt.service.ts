@@ -2,6 +2,7 @@ const MB_RELEASE_SEARCH = '/api/musicbrainz/release';
 const CAA_BASE = 'https://coverartarchive.org/release';
 const CACHE_PREFIX = 'musicpostr_coverart_';
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 dias
+const NEGATIVE_CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 1 dia para álbuns sem capa no CAA
 
 export interface CoverArtResult {
   mbid: string;
@@ -9,7 +10,8 @@ export interface CoverArtResult {
   backUrl: string | null;
 }
 
-interface CachedCoverArt extends CoverArtResult {
+interface CachedCoverArt {
+  result: CoverArtResult | null;
   cachedAt: number;
 }
 
@@ -19,34 +21,39 @@ function buildCacheKey(albumTitle: string, artistName: string): string {
     .trim();
 }
 
-function readCache(cacheKey: string): CoverArtResult | null {
+function readCache(cacheKey: string): { found: boolean; result: CoverArtResult | null } {
   try {
     const raw = localStorage.getItem(cacheKey);
-    if (!raw) return null;
+    if (!raw) return { found: false, result: null };
     const parsed = JSON.parse(raw) as CachedCoverArt;
-    if (Date.now() - parsed.cachedAt > CACHE_TTL_MS) {
+    const ttl = parsed.result ? CACHE_TTL_MS : NEGATIVE_CACHE_TTL_MS;
+    if (Date.now() - parsed.cachedAt > ttl) {
       localStorage.removeItem(cacheKey);
-      return null;
+      return { found: false, result: null };
     }
-    return { mbid: parsed.mbid, frontUrl: parsed.frontUrl, backUrl: parsed.backUrl };
+    return { found: true, result: parsed.result };
   } catch {
-    return null;
+    return { found: false, result: null };
   }
 }
 
-function writeCache(cacheKey: string, result: CoverArtResult): void {
+function writeCache(cacheKey: string, result: CoverArtResult | null): void {
   try {
-    const payload: CachedCoverArt = { ...result, cachedAt: Date.now() };
+    const payload: CachedCoverArt = { result, cachedAt: Date.now() };
     localStorage.setItem(cacheKey, JSON.stringify(payload));
   } catch {
     // storage cheio/indisponível: segue sem cache
   }
 }
 
+function sanitizeLucene(str: string): string {
+  return str.replace(/["\\/()[\]{}~*?:!^&|+-]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 /**
  * Busca o release correspondente no MusicBrainz e retorna as URLs de alta
  * resolução da capa (frente e verso) no Cover Art Archive.
- * Retorna null quando o álbum não possui artwork cadastrado.
+ * Retorna null quando o álbum não possui artwork cadastrado ou quando o serviço estiver ocupado.
  */
 export async function findAlbumCoverArt(
   albumTitle: string,
@@ -55,33 +62,48 @@ export async function findAlbumCoverArt(
   const cacheKey = buildCacheKey(albumTitle, artistName);
 
   const cached = readCache(cacheKey);
-  if (cached) return cached;
+  if (cached.found) return cached.result;
 
-  const luceneQuery = `release:"${albumTitle}" AND artist:"${artistName}"`;
-  const response = await fetch(
-    `${MB_RELEASE_SEARCH}?query=${encodeURIComponent(luceneQuery)}&fmt=json&limit=10`
-  );
+  const cleanTitle = sanitizeLucene(albumTitle);
+  const cleanArtist = sanitizeLucene(artistName);
 
-  if (!response.ok) {
-    throw new Error(`MusicBrainz respondeu ${response.status}`);
+  if (!cleanTitle && !cleanArtist) return null;
+
+  try {
+    const luceneQuery = cleanArtist
+      ? `release:(${cleanTitle}) AND artist:(${cleanArtist})`
+      : `release:(${cleanTitle})`;
+
+    const response = await fetch(
+      `${MB_RELEASE_SEARCH}?query=${encodeURIComponent(luceneQuery)}&fmt=json&limit=10`
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    const releases: any[] = data?.releases ?? [];
+
+    const withArtwork = releases.find(
+      (release) => release['cover-art-archive']?.artwork === true
+    );
+
+    if (!withArtwork) {
+      writeCache(cacheKey, null);
+      return null;
+    }
+
+    const caa = withArtwork['cover-art-archive'];
+    const result: CoverArtResult = {
+      mbid: withArtwork.id,
+      frontUrl: `${CAA_BASE}/${withArtwork.id}/front-1200`,
+      backUrl: caa.back ? `${CAA_BASE}/${withArtwork.id}/back` : null,
+    };
+
+    writeCache(cacheKey, result);
+    return result;
+  } catch {
+    return null;
   }
-
-  const data = await response.json();
-  const releases: any[] = data?.releases ?? [];
-
-  const withArtwork = releases.find(
-    (release) => release['cover-art-archive']?.artwork === true
-  );
-
-  if (!withArtwork) return null;
-
-  const caa = withArtwork['cover-art-archive'];
-  const result: CoverArtResult = {
-    mbid: withArtwork.id,
-    frontUrl: `${CAA_BASE}/${withArtwork.id}/front-1200`,
-    backUrl: caa.back ? `${CAA_BASE}/${withArtwork.id}/back` : null,
-  };
-
-  writeCache(cacheKey, result);
-  return result;
 }
