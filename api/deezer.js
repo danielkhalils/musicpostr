@@ -9,13 +9,14 @@ export default async function handler(req, res) {
 
   const { path, ...query } = req.query;
   const endpoint = Array.isArray(path) ? path.join('/') : (path || '');
+  const cleanEndpoint = endpoint.replace(/^\/+/, '');
 
-  // Busca os lançamentos globais (Editorial Mundial - ID 125)
-  const baseUrl = endpoint 
-    ? `https://api.deezer.com/${endpoint}` 
+  // Busca os lançamentos globais (Editorial Mundial - ID 125) quando nenhum endpoint é especificado
+  const baseUrl = cleanEndpoint 
+    ? `https://api.deezer.com/${cleanEndpoint}` 
     : 'https://api.deezer.com/editorial/125/releases';
 
-  // Encaminha os query params recebidos (ex.: limit) para a API do Deezer
+  // Encaminha os query params recebidos (ex.: limit, q, index) para a API do Deezer
   const params = new URLSearchParams();
   Object.entries(query).forEach(([key, value]) => {
     if (Array.isArray(value)) {
@@ -28,25 +29,26 @@ export default async function handler(req, res) {
   const targetUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
 
   try {
-    const response = await fetch(targetUrl);
+    const response = await fetch(targetUrl, {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
     const data = await response.json();
 
-    // Se estivermos buscando a lista de lançamentos, aplicamos o filtro internacional rigoroso
-    if (!endpoint && data.data) {
-      // Termos comuns em mercados locais que queremos excluir para focar no internacional
+    // Se estivermos buscando a lista de lançamentos padrão (sem endpoint), aplicamos o filtro internacional
+    if (!cleanEndpoint && data.data) {
       const termosLocaisExcluidos = [
         'sertanejo', 'pagode', 'funk', 'forró', 'axé', 'mpb', 
         'ao vivo', 'gravado ao vivo', 'church', 'worship brasileiro'
       ];
 
       data.data = data.data.filter(item => {
-        // Garante que é um álbum ou single oficial com capa de alta qualidade
         if (!item.cover_medium && !item.cover_big) return false;
 
         const title = (item.title || '').toLowerCase();
         const artist = (item.artist?.name || '').toLowerCase();
 
-        // Verifica se o título ou artista contém termos puramente locais
         const contemTermoLocal = termosLocaisExcluidos.some(termo => 
           title.includes(termo) || artist.includes(termo)
         );
@@ -55,7 +57,7 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(200).json(data);
+    return res.status(response.status || 200).json(data);
   } catch (error) {
     console.error('Erro no serviço proxy do Deezer:', error);
     return res.status(500).json({ error: 'Falha ao comunicar com a API do Deezer' });
