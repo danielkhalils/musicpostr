@@ -72,12 +72,14 @@ export function ArtistsPage() {
     async function fetchDeezerArtists() {
       setIsLoading(true);
       try {
-        const query = searchQuery.trim() === "" ? "pop" : searchQuery;
+        const trimmedQuery = searchQuery.trim();
         const index = (page - 1) * ITEMS_PER_PAGE;
 
-        const response = await fetch(
-          `/api/deezer/search/artist?q=${encodeURIComponent(query)}&index=${index}&limit=${ITEMS_PER_PAGE}`
-        );
+        const url = trimmedQuery !== ""
+          ? `/api/deezer/search/artist?q=${encodeURIComponent(trimmedQuery)}&index=${index}&limit=${ITEMS_PER_PAGE}`
+          : `/api/deezer/chart/0/artists?index=${index}&limit=${ITEMS_PER_PAGE}`;
+
+        const response = await fetch(url);
         const data = await response.json();
 
         if (data && data.data && data.data.length > 0) {
@@ -118,12 +120,13 @@ export function ArtistsPage() {
               id: artist.id.toString(),
               name: artist.name,
               imageUrl: finalImageUrl,
-              nbFans: artist.nb_fans,
+              nbFans: artist.nb_fans || artist.nb_fan,
             };
           });
 
           setArtists(formattedArtists);
-          setHasMore(rawArtists.length >= ITEMS_PER_PAGE);
+          const total = typeof data.total === "number" ? data.total : 0;
+          setHasMore(total > 0 ? index + rawArtists.length < total : rawArtists.length >= ITEMS_PER_PAGE);
         } else {
           setArtists([]);
           setHasMore(false);
