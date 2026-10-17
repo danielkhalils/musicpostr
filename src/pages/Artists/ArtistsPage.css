@@ -218,21 +218,21 @@
 
 .artist-name {
   margin-top: 0.75rem;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   line-height: 1.25rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--foreground);
   text-align: center;
+  white-space: nowrap;
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
+  text-overflow: ellipsis;
   width: 100%;
+  padding: 0 0.5rem;
+  display: block;
 }
 
 .artist-card:hover .artist-name {
   color: var(--primary);
-  text-decoration: underline;
 }
 
 .artist-fans {
@@ -240,11 +240,12 @@
   line-height: 1rem;
   color: var(--muted-foreground);
   text-align: center;
+  white-space: nowrap;
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
+  text-overflow: ellipsis;
   width: 100%;
+  margin-top: 0.2rem;
+  display: block;
 }
 
 .artists-pagination {
