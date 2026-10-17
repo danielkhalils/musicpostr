@@ -14,8 +14,7 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (data && data.items) {
-      const newsList = data.items.map(item => {
-        // Tenta extrair a imagem de dentro da descrição HTML caso o thumbnail venha vazio
+      const newsList = data.items.map((item) => {
         let imgUrl = item.thumbnail || item.enclosure?.link || '';
         if (!imgUrl && item.description) {
           const match = item.description.match(/<img[^>]+src="([^">]+)"/);
@@ -28,7 +27,7 @@ export default async function handler(req, res) {
           pubDate: item.pubDate,
           author: item.author || 'Pitchfork',
           thumbnail: imgUrl,
-          description: item.description?.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...'
+          description: item.description?.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...',
         };
       });
 
