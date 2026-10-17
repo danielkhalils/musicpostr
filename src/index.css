@@ -1,6 +1,5 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
 @import "tailwindcss";
 
 /* Define explicitamente que o modo escuro é ativado pela classe .dark */
