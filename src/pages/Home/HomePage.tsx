@@ -62,7 +62,11 @@ const GENRES = [
   { id: "rock", name: "Rock", color: "from-amber-600 to-red-700" },
   { id: "hip-hop", name: "Hip-Hop", color: "from-purple-600 to-indigo-800" },
   { id: "electronic", name: "Eletrônica", color: "from-cyan-500 to-blue-600" },
-  { id: "indie", name: "Indie / Alternativo", color: "from-emerald-500 to-teal-700" },
+  {
+    id: "indie",
+    name: "Indie / Alternativo",
+    color: "from-emerald-500 to-teal-700",
+  },
   { id: "r-b", name: "R&B", color: "from-orange-500 to-amber-600" },
 ];
 
@@ -84,7 +88,10 @@ export default function HomePage() {
       const { scrollLeft, clientWidth } = tracksScrollRef.current;
       const scrollAmount = clientWidth * 0.75;
       tracksScrollRef.current.scrollTo({
-        left: direction === "left" ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+        left:
+          direction === "left"
+            ? scrollLeft - scrollAmount
+            : scrollLeft + scrollAmount,
         behavior: "smooth",
       });
     }
@@ -116,14 +123,14 @@ export default function HomePage() {
 
         if (releasesData && releasesData.data) {
           const albums = releasesData.data;
-          setHighlights(albums.slice(0, 5));
-          setPopularAlbums(albums.slice(5, 13));
+          setHighlights(albums.slice(0, 10)); // AUMENTADO PARA 10 ITENS PARA GERAR ROLAGEM
+          setPopularAlbums(albums.slice(10, 18));
           setNewReleases(
-            albums.slice(13, 21).length > 0
-              ? albums.slice(13, 21)
-              : albums.slice(5, 13)
+            albums.slice(18, 26).length > 0
+              ? albums.slice(18, 26)
+              : albums.slice(10, 18),
           );
-          setTopRatedAlbums([...albums].reverse().slice(0, 8)); // Simulação de bem avaliados
+          setTopRatedAlbums([...albums].reverse().slice(0, 8));
         }
 
         if (tracksData && tracksData.data) {
@@ -171,7 +178,8 @@ export default function HomePage() {
             <div className="hero-info-container">
               <div className="flex items-center gap-2 mb-1">
                 <span className="hero-badge">
-                  <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" /> Destaque da Crítica
+                  <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />{" "}
+                  Destaque da Crítica
                 </span>
               </div>
 
@@ -188,13 +196,16 @@ export default function HomePage() {
                   <Star className="h-3.5 w-3.5 fill-current" /> 9.4 / 10 (Média)
                 </span>
                 <span>•</span>
-                <span className="font-medium">{currentAlbum.release_date?.substring(0, 4) || "2026"}</span>
+                <span className="font-medium">
+                  {currentAlbum.release_date?.substring(0, 4) || "2026"}
+                </span>
               </div>
 
               <div className="hero-actions">
                 <Link to={`/album/${currentAlbum.id}`}>
                   <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-7 py-3 text-xs font-bold gap-2 shadow-lg shadow-primary/25 transition-all hover:scale-105 cursor-pointer">
-                    <Play className="h-4 w-4 fill-primary-foreground" /> Ouvir e Avaliar
+                    <Play className="h-4 w-4 fill-primary-foreground" /> Ouvir e
+                    Avaliar
                   </Button>
                 </Link>
                 <Link to="/reviews">
@@ -216,7 +227,10 @@ export default function HomePage() {
                     onClick={() => setActiveIndex(index)}
                     className={`hero-thumb-card ${activeIndex === index ? "active" : ""}`}
                   >
-                    <img src={item.cover_medium || item.cover_big} alt={item.title} />
+                    <img
+                      src={item.cover_medium || item.cover_big}
+                      alt={item.title}
+                    />
                     <div className="hero-thumb-overlay">
                       <span className="text-[10px] font-bold text-white truncate">
                         {item.title}
@@ -235,21 +249,35 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-bold text-foreground">Álbuns Populares do Momento</h2>
+            <h2 className="text-xl font-bold text-foreground">
+              Álbuns Populares do Momento
+            </h2>
           </div>
-          <Link to="/top-albuns" className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline">
+          <Link
+            to="/top-albuns"
+            className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline"
+          >
             Ver lista completa <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-5">
           {popularAlbums.map((album) => (
-            <Link key={album.id} to={`/album/${album.id}`} className="popular-album-card group">
+            <Link
+              key={album.id}
+              to={`/album/${album.id}`}
+              className="popular-album-card group"
+            >
               <div className="popular-cover-wrapper">
-                <img src={album.cover_big || album.cover_medium} alt={album.title} />
+                <img
+                  src={album.cover_big || album.cover_medium}
+                  alt={album.title}
+                />
                 <div className="popular-rating-badge">★ 9.2</div>
               </div>
-              <h3 className="popular-title group-hover:text-primary">{album.title}</h3>
+              <h3 className="popular-title group-hover:text-primary">
+                {album.title}
+              </h3>
               <p className="popular-artist">{album.artist?.name}</p>
             </Link>
           ))}
@@ -262,23 +290,37 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Flame className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-bold text-foreground">Novos Lançamentos</h2>
+              <h2 className="text-xl font-bold text-foreground">
+                Novos Lançamentos
+              </h2>
             </div>
-            <Link to="/rankings?filter=releases" className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline">
+            <Link
+              to="/rankings?filter=releases"
+              className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline"
+            >
               Ver lista completa <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-5">
             {newReleases.map((album) => (
-              <Link key={album.id} to={`/album/${album.id}`} className="popular-album-card group">
+              <Link
+                key={album.id}
+                to={`/album/${album.id}`}
+                className="popular-album-card group"
+              >
                 <div className="popular-cover-wrapper">
-                  <img src={album.cover_big || album.cover_medium} alt={album.title} />
+                  <img
+                    src={album.cover_big || album.cover_medium}
+                    alt={album.title}
+                  />
                   <span className="absolute bottom-2 left-2 bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
                     NOVO
                   </span>
                 </div>
-                <h3 className="popular-title group-hover:text-primary">{album.title}</h3>
+                <h3 className="popular-title group-hover:text-primary">
+                  {album.title}
+                </h3>
                 <p className="popular-artist">{album.artist?.name}</p>
               </Link>
             ))}
@@ -291,21 +333,37 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <Award className="h-5 w-5 text-amber-500" />
-            <h2 className="text-xl font-bold text-foreground">Mais Bem Avaliados (Aclamados)</h2>
+            <h2 className="text-xl font-bold text-foreground">
+              Mais Bem Avaliados (Aclamados)
+            </h2>
           </div>
-          <Link to="/rankings?filter=top-rated" className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline">
+          <Link
+            to="/rankings?filter=top-rated"
+            className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline"
+          >
             Ver ranking completo <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-5">
           {topRatedAlbums.map((album) => (
-            <Link key={album.id} to={`/album/${album.id}`} className="popular-album-card group">
+            <Link
+              key={album.id}
+              to={`/album/${album.id}`}
+              className="popular-album-card group"
+            >
               <div className="popular-cover-wrapper">
-                <img src={album.cover_big || album.cover_medium} alt={album.title} />
-                <div className="popular-rating-badge bg-amber-500 text-black font-extrabold">★ 9.8</div>
+                <img
+                  src={album.cover_big || album.cover_medium}
+                  alt={album.title}
+                />
+                <div className="popular-rating-badge bg-amber-500 text-black font-extrabold">
+                  ★ 9.8
+                </div>
               </div>
-              <h3 className="popular-title group-hover:text-primary">{album.title}</h3>
+              <h3 className="popular-title group-hover:text-primary">
+                {album.title}
+              </h3>
               <p className="popular-artist">{album.artist?.name}</p>
             </Link>
           ))}
@@ -316,7 +374,9 @@ export default function HomePage() {
       <section className="content-section max-w-7xl mx-auto px-4 py-8 w-full">
         <div className="flex items-center gap-2 mb-6">
           <Compass className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold text-foreground">Explorar por Gênero</h2>
+          <h2 className="text-xl font-bold text-foreground">
+            Explorar por Gênero
+          </h2>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
@@ -326,7 +386,9 @@ export default function HomePage() {
               to={`/search?genre=${genre.id}`}
               className={`h-28 rounded-2xl p-4 bg-gradient-to-br ${genre.color} flex flex-col justify-between shadow-md hover:scale-105 transition-transform text-white`}
             >
-              <span className="font-bold text-sm tracking-wide">{genre.name}</span>
+              <span className="font-bold text-sm tracking-wide">
+                {genre.name}
+              </span>
               <Music className="h-6 w-6 self-end opacity-80" />
             </Link>
           ))}
@@ -380,14 +442,29 @@ export default function HomePage() {
                     <span className="text-sm font-bold text-muted-foreground w-5 text-center flex-shrink-0">
                       {idx + 1}
                     </span>
-                    <img src={track.album?.cover_medium} alt={track.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                    <img
+                      src={track.album?.cover_medium}
+                      alt={track.title}
+                      className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                    />
                     <div className="overflow-hidden">
-                      <h4 className="text-xs font-bold text-foreground truncate">{track.title}</h4>
-                      <p className="text-[11px] text-muted-foreground truncate">{track.artist?.name}</p>
+                      <h4 className="text-xs font-bold text-foreground truncate">
+                        {track.title}
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {track.artist?.name}
+                      </p>
                     </div>
                   </div>
-                  <Link to={`/album/${track.id}`} className="flex-shrink-0 ml-2">
-                    <Button size="icon" variant="ghost" className="rounded-full h-8 w-8 hover:text-primary">
+                  <Link
+                    to={`/album/${track.id}`}
+                    className="flex-shrink-0 ml-2"
+                  >
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="rounded-full h-8 w-8 hover:text-primary"
+                    >
                       <Play className="h-4 w-4 fill-current" />
                     </Button>
                   </Link>
@@ -404,7 +481,9 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Newspaper className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-bold text-foreground">Crítica e Notícias Globais</h2>
+              <h2 className="text-xl font-bold text-foreground">
+                Crítica e Notícias Globais
+              </h2>
             </div>
           </div>
 
@@ -459,25 +538,44 @@ export default function HomePage() {
               </span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Sua rede social definitiva para diário de escuta, críticas sonoras e compartilhamento de notas musicais.
+              Sua rede social definitiva para diário de escuta, críticas sonoras
+              e compartilhamento de notas musicais.
             </p>
           </div>
 
           <div>
             <h4 className="footer-heading">Plataforma</h4>
             <ul className="footer-links">
-              <li><Link to="/feed">Feed da Comunidade</Link></li>
-              <li><Link to="/rankings">Rankings e Notas</Link></li>
-              <li><Link to="/artistas">Artistas em Alta</Link></li>
+              <li>
+                <Link to="/feed">Feed da Comunidade</Link>
+              </li>
+              <li>
+                <Link to="/rankings">Rankings e Notas</Link>
+              </li>
+              <li>
+                <Link to="/artistas">Artistas em Alta</Link>
+              </li>
             </ul>
           </div>
 
           <div>
             <h4 className="footer-heading">Legal & Privacidade</h4>
             <ul className="footer-links">
-              <li><a href="#sobre" onClick={(e) => e.preventDefault()}>Sobre o Musicpostr</a></li>
-              <li><a href="#termos" onClick={(e) => e.preventDefault()}>Termos de Serviço</a></li>
-              <li><a href="#privacidade" onClick={(e) => e.preventDefault()}>Política de Privacidade</a></li>
+              <li>
+                <a href="#sobre" onClick={(e) => e.preventDefault()}>
+                  Sobre o Musicpostr
+                </a>
+              </li>
+              <li>
+                <a href="#termos" onClick={(e) => e.preventDefault()}>
+                  Termos de Serviço
+                </a>
+              </li>
+              <li>
+                <a href="#privacidade" onClick={(e) => e.preventDefault()}>
+                  Política de Privacidade
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -485,11 +583,19 @@ export default function HomePage() {
             <h4 className="footer-heading">Contato & Suporte</h4>
             <ul className="footer-links">
               <li>
-                <a href="#contato" onClick={(e) => e.preventDefault()} className="flex items-center gap-1.5">
+                <a
+                  href="#contato"
+                  onClick={(e) => e.preventDefault()}
+                  className="flex items-center gap-1.5"
+                >
                   <Mail className="h-3.5 w-3.5" /> suporte@musicpostr.com
                 </a>
               </li>
-              <li><span className="text-[11px] text-muted-foreground">Versão 1.2.0-beta</span></li>
+              <li>
+                <span className="text-[11px] text-muted-foreground">
+                  Versão 1.2.0-beta
+                </span>
+              </li>
             </ul>
           </div>
         </div>
@@ -499,7 +605,8 @@ export default function HomePage() {
             <p>© 2026 Musicpostr. Todos os direitos reservados.</p>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Ambiente Seguro
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />{" "}
+                Ambiente Seguro
               </span>
             </div>
           </div>
