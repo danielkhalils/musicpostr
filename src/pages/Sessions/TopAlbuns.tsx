@@ -106,11 +106,11 @@ export function TopAlbuns() {
           </button>
 
           <div>
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight drop-shadow-md text-zinc-900 dark:text-white break-words">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight text-foreground drop-shadow-xs break-words">
               Álbuns Populares do Momento
             </h1>
             {/* Subtítulo espelhado no padrão do ArtistDetail */}
-            <p className="text-muted-foreground dark:text-zinc-300 mt-2 text-sm md:text-base drop-shadow font-medium">
+            <p className="text-muted-foreground mt-2 text-sm md:text-base font-medium">
               Explore a listagem completa dos lançamentos e álbuns mais aclamados pela comunidade e pela crítica.
             </p>
           </div>

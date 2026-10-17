@@ -8,40 +8,62 @@
   color: var(--foreground);
   display: flex;
   flex-direction: column;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* --- Hero Banner Imersivo --- */
+/* --- Hero Banner Imersivo & Responsivo --- */
 .hero-banner-section {
   position: relative;
   width: 100%;
   min-height: 38rem;
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  justify-content: flex-end;
   overflow: hidden;
+  padding-top: 5.5rem;
   padding-bottom: 3.5rem;
+}
+
+@media (min-width: 768px) {
+  .hero-banner-section {
+    min-height: 42rem;
+    padding-top: 7rem;
+    padding-bottom: 4rem;
+  }
 }
 
 .hero-backdrop {
   position: absolute;
   inset: 0;
   background-size: cover;
-  background-position: center;
-  filter: blur(8px);
+  background-position: center 30%;
+  filter: blur(6px);
   transform: scale(1.08);
-  opacity: 0.45;
-  transition: background-image 0.5s ease-in-out;
+  opacity: 0.75;
+  transition: background-image 0.5s ease-in-out, opacity 0.3s ease;
 }
 
+.dark .hero-backdrop {
+  opacity: 0.55;
+}
+
+/* Overlay de gradiente adaptativo para Light e Dark */
 .hero-gradient-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to top,
-    var(--background) 0%,
-    rgba(0, 0, 0, 0.6) 50%,
-    rgba(0, 0, 0, 0.3) 100%
-  );
+  background:
+    linear-gradient(to right, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.55) 35%, rgba(255, 255, 255, 0.15) 60%, transparent 80%),
+    linear-gradient(to top, var(--background) 0%, var(--background) 4%, transparent 60%),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.45) 0%, transparent 15%);
   pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+.dark .hero-gradient-overlay {
+  background:
+    linear-gradient(to right, rgba(9, 9, 11, 0.9) 0%, rgba(9, 9, 11, 0.65) 35%, rgba(9, 9, 11, 0.2) 60%, transparent 80%),
+    linear-gradient(to top, var(--background) 0%, var(--background) 4%, transparent 60%),
+    linear-gradient(to bottom, rgba(9, 9, 11, 0.5) 0%, transparent 15%);
 }
 
 .hero-content-wrapper {
@@ -49,46 +71,85 @@
   max-width: 80rem;
   margin: 0 auto;
   width: 100%;
-  padding: 0 1rem;
+  padding: 0 1.25rem;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .hero-content-wrapper {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 2rem;
+  }
 }
 
 .hero-info-container {
-  max-width: 42rem;
+  max-width: 48rem;
+  width: 100%;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  color: var(--primary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.08);
 }
 
 .hero-title {
-  font-size: 2.75rem;
-  line-height: 1.1;
+  font-size: 2.25rem;
+  line-height: 1.15;
   font-weight: 900;
   color: var(--foreground);
   letter-spacing: -0.03em;
-  margin-bottom: 0.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-wrap: balance;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .hero-title {
-    font-size: 4rem;
+    font-size: 3rem;
+    line-height: 1.1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-title {
+    font-size: 3.75rem;
+    line-height: 1.08;
   }
 }
 
 .hero-artist {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: var(--muted-foreground);
   margin-bottom: 1rem;
 }
 
-.hero-description {
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: var(--foreground);
-  opacity: 0.9;
-  margin-bottom: 1.25rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+@media (min-width: 768px) {
+  .hero-artist {
+    font-size: 1.25rem;
+  }
 }
 
 .hero-metadata {
@@ -101,71 +162,122 @@
   margin-bottom: 1.75rem;
 }
 
+.hero-rating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+.dark .hero-rating-pill {
+  color: #fbbf24;
+}
+
 .hero-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.875rem;
 }
 
 /* Barra de Miniaturas (Carrossel inferior do Hero) */
 .hero-thumbnails-bar {
-  display: none;
-  margin-top: 2.5rem;
-  justify-content: flex-end;
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; 
+  scrollbar-width: none;
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
+  padding-left: 0.75rem; 
+  margin-top: -1rem; 
+  margin-left: -0.75rem;
   z-index: 3;
+  min-width: 0; 
+  max-width: 100%;
 }
 
 @media (min-width: 1024px) {
   .hero-thumbnails-bar {
-    display: flex;
+    max-width: 32rem; 
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
   }
+}
+
+.hero-thumbnails-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .hero-thumbnails-track {
   display: flex;
   gap: 0.75rem;
+  padding-right: 2.5rem; /* Garante espaço extra no final para o último card */
+  padding-left: 0.15rem; 
 }
 
 .hero-thumb-card {
   position: relative;
-  width: 6rem;
-  height: 4rem;
+  width: 5.5rem;
+  height: 3.75rem;
   border-radius: 0.75rem;
   overflow: hidden;
-  border: 2px solid var(--border);
+  border: 1.5px solid var(--border);
   background-color: var(--muted);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transform: translateZ(0); 
+}
+
+@media (min-width: 640px) {
+  .hero-thumb-card {
+    width: 6.5rem;
+    height: 4.25rem;
+  }
 }
 
 .hero-thumb-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
+}
+
+.hero-thumb-card:hover {
+  transform: translateY(-4px) translateZ(0); 
+  border-color: var(--primary);
 }
 
 .hero-thumb-card:hover img {
-  transform: scale(1.05);
+  transform: scale(1.12); /* Zoom suave na imagem dentro do card */
 }
 
 .hero-thumb-card.active {
   border-color: var(--primary);
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 0 2px var(--primary), 0 8px 20px rgba(124, 58, 237, 0.35);
+  transform: scale(1.05) translateZ(0);
 }
 
 .hero-thumb-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.2) 60%, transparent 100%);
   display: flex;
   align-items: flex-end;
   padding: 0.35rem 0.5rem;
+  pointer-events: none; /* Evita que o overlay bloqueie a interação com o card */
 }
 
-
-/* --- Seção de Álbuns Populares --- */
+/* --- Cards com Transparência e Glassmorphism --- */
 .popular-album-card {
   background-color: var(--card);
   border: 1px solid var(--border);
@@ -174,14 +286,15 @@
   display: flex;
   flex-direction: column;
   text-decoration: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(8px);
 }
 
 .popular-album-card:hover {
   border-color: var(--primary);
   transform: translateY(-3px);
-  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(124, 58, 237, 0.15);
 }
 
 .popular-cover-wrapper {
@@ -209,13 +322,13 @@
   top: 0.5rem;
   right: 0.5rem;
   background-color: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  color: #f59e0b;
+  backdrop-filter: blur(8px);
+  color: #fbbf24;
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.2rem 0.5rem;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .popular-title {
@@ -236,7 +349,6 @@
   text-overflow: ellipsis;
   margin-top: 0.15rem;
 }
-
 
 /* --- Footer Institucional --- */
 .site-footer {
