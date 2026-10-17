@@ -125,8 +125,14 @@ export function ArtistsPage() {
           });
 
           setArtists(formattedArtists);
-          const total = typeof data.total === "number" ? data.total : 0;
-          setHasMore(total > 0 ? index + rawArtists.length < total : rawArtists.length >= ITEMS_PER_PAGE);
+          const isSearching = trimmedQuery !== "";
+          if (isSearching) {
+            const total = typeof data.total === "number" ? data.total : 0;
+            setHasMore(Boolean(data.next) || (total > 0 ? index + rawArtists.length < total : rawArtists.length >= ITEMS_PER_PAGE));
+          } else {
+            // No chart do Deezer, o endpoint retorna blocos de 18 até o teto de 100 artistas
+            setHasMore(rawArtists.length === ITEMS_PER_PAGE && index + rawArtists.length < 100);
+          }
         } else {
           setArtists([]);
           setHasMore(false);
@@ -185,11 +191,11 @@ export function ArtistsPage() {
               return (
                 <div
                   key={artist.id}
-                  className="artist-card-wrapper relative group"
+                  className="artist-card-wrapper flex flex-col items-center group w-full"
                 >
                   <Link
                     to={`/artista/${artist.id}`}
-                    className="artist-card flex flex-col items-center"
+                    className="artist-card flex flex-col items-center w-full"
                   >
                     <div className="artist-avatar-wrapper">
                       {artist.imageUrl ? (
@@ -199,11 +205,11 @@ export function ArtistsPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <Music className="h-10 w-10 text-zinc-600" />
+                        <Music className="h-10 w-10 text-muted-foreground" />
                       )}
                     </div>
 
-                    <span className="artist-name text-center">
+                    <span className="artist-name">
                       {artist.name}
                     </span>
 
@@ -212,20 +218,20 @@ export function ArtistsPage() {
                     </span>
                   </Link>
 
-                  {/* Botão de Seguir / Ídolo Flutuante no Card */}
-                  <div className="absolute top-3 right-3 z-10">
+                  {/* Botão de Seguir / Ídolo */}
+                  <div className="mt-2.5">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={(e) => toggleFollow(artist, e)}
-                      className={`h-8 px-3 rounded-full text-xs font-semibold shadow-md transition-all gap-1 ${
+                      className={`h-7 px-3.5 rounded-full text-xs font-semibold shadow-xs transition-all gap-1 cursor-pointer ${
                         isFollowing
-                          ? "bg-primary text-white border-primary hover:bg-primary/80 dark:bg-primary dark:hover:bg-primary/80"
-                          : "bg-zinc-900/90 text-zinc-200 border-zinc-700 hover:bg-zinc-800 hover:text-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                          ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+                          : "bg-card/80 text-foreground border-border hover:bg-muted"
                       }`}
                       title={isFollowing ? "Deixar de seguir" : "Seguir como ídolo"}
                     >
-                      <Award className={`h-3.5 w-3.5 ${isFollowing ? "fill-white" : ""}`} />
+                      <Award className={`h-3 w-3 ${isFollowing ? "fill-current" : ""}`} />
                       {isFollowing ? "Seguindo" : "Seguir"}
                     </Button>
                   </div>

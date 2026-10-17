@@ -22,7 +22,7 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
+      <div className="min-h-screen bg-background text-foreground antialiased transition-colors duration-200">
         <Navbar />
         {/* Área de conteúdo principal  */}
         <main>
