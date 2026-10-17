@@ -91,6 +91,17 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    async function parseJson(res: Response | null) {
+      if (!res || !res.ok) return null;
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) return null;
+      try {
+        return await res.json();
+      } catch {
+        return null;
+      }
+    }
+
     async function fetchHomeData() {
       setIsLoading(true);
       try {
@@ -100,8 +111,8 @@ export default function HomePage() {
           fetch("/api/news").catch(() => null),
         ]);
 
-        const releasesData = await releasesRes.json();
-        const tracksData = tracksRes ? await tracksRes.json() : null;
+        const releasesData = await parseJson(releasesRes);
+        const tracksData = await parseJson(tracksRes);
 
         if (releasesData && releasesData.data) {
           const albums = releasesData.data;
@@ -119,11 +130,9 @@ export default function HomePage() {
           setTopTracks(tracksData.data.slice(0, 20));
         }
 
-        if (newsRes && newsRes.ok) {
-          const newsData = await newsRes.json();
-          if (newsData && newsData.articles) {
-            setNews(newsData.articles.slice(0, 3));
-          }
+        const newsData = await parseJson(newsRes);
+        if (newsData && newsData.articles) {
+          setNews(newsData.articles.slice(0, 3));
         }
       } catch (error) {
         console.error("Erro ao carregar dados da Home:", error);
