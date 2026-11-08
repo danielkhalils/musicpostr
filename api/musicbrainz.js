@@ -23,19 +23,19 @@ export default async function handler(req, res) {
   const queryString = params.toString();
   const targetUrl = `https://musicbrainz.org/ws/2/${cleanEndpoint}${queryString ? `?${queryString}` : ''}`;
 
-  const maxRetries = 2;
+  const maxRetries = 1;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const response = await fetch(targetUrl, {
         headers: {
-          'User-Agent': 'MusicPostr/1.0.0 ( contact@musicpostr.vercel.app )',
+          'User-Agent': 'MusicPostr/1.2.0 ( contact@musicpostr.vercel.app )',
           'Accept': 'application/json',
         },
       });
 
-      // Se o MusicBrainz responder com 503 (rate limiting ou servidor ocupado), aguarda e tenta de novo
+      // Se o MusicBrainz responder com 503 (rate limiting ou servidor ocupado), aguarda brevemente e tenta de novo
       if (response.status === 503 && attempt < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, 1200));
+        await new Promise((resolve) => setTimeout(resolve, 450));
         continue;
       }
 

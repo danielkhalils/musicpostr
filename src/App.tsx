@@ -34,12 +34,12 @@ function App() {
             <Route path="/artista/:id" element={<ArtistDetail />} />
             <Route path="/album/:id" element={<AlbumDetails />} />
             <Route path="/reviews" element={<ReviewsPage />} />
+            <Route path="/search" element={<ReviewsPage />} />
             <Route path="/rankings" element={<RankingsPage />} />
             <Route path="/perfil" element={<ProfilePage />} />
             <Route path="/minhas-avaliacoes" element={<MyReviewsPage />} />
             <Route path="/configuracoes" element={<SettingsPage />} />
-            <Route path="/perfil" element={<ProfilePage />} />
-            <Route path="/perfil/:username" element={<ProfilePage />} />{" "}
+            <Route path="/perfil/:username" element={<ProfilePage />} />
             <Route path="/favoritos" element={<FavoritesPage />} />
             <Route path="/amigos" element={<FriendsPage />} />
             <Route path="/idolos" element={<IdolsPage />} />

@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Disc, Mic, Music, User, Loader2, X } from "lucide-react";
+import {
+  searchLocalCatalogInstant,
+  searchAlbumsInMusicBrainz,
+  searchArtistsInMusicBrainz,
+  searchTracksInMusicBrainz,
+} from "../../services/musicBrainz.service";
+import { handleCoverImageError } from "../../services/coverArt.service";
 import "./GlobalSearch.css";
 
 interface SearchResult {
@@ -11,6 +18,30 @@ interface SearchResult {
   image?: string;
   link: string;
 }
+
+const COMMUNITY_USERS: SearchResult[] = [
+  {
+    id: "user-1",
+    title: "Ana Beatriz",
+    subtitle: "@anabeat • Usuário",
+    type: "user",
+    link: "/perfil",
+  },
+  {
+    id: "user-2",
+    title: "Lucas Sound",
+    subtitle: "@lucas_snd • Usuário",
+    type: "user",
+    link: "/perfil/lucas_snd",
+  },
+  {
+    id: "user-3",
+    title: "Beat Critic",
+    subtitle: "@beatcritic • Usuário",
+    type: "user",
+    link: "/perfil/beatcritic",
+  },
+];
 
 export function GlobalSearch() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +55,6 @@ export function GlobalSearch() {
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Fecha o menu ao clicar fora
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -38,115 +68,135 @@ export function GlobalSearch() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Busca integrada na API do Deezer + Mock de Usuários da comunidade
   useEffect(() => {
-    if (!query.trim()) {
+    let isMounted = true;
+    const trimmed = query.trim();
+
+    if (!trimmed) {
       setResults([]);
       setIsLoading(false);
       return;
     }
 
-    const timer = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        const q = encodeURIComponent(query);
+    // 1. Resposta instantânea (0ms) do catálogo local em memória
+    const local = searchLocalCatalogInstant(trimmed);
+    const matchedUsers = COMMUNITY_USERS.filter(
+      (u) =>
+        u.title.toLowerCase().includes(trimmed.toLowerCase()) ||
+        u.subtitle.toLowerCase().includes(trimmed.toLowerCase())
+    );
 
-        // Requisições paralelas para álbuns, artistas e músicas via proxy do Deezer
+    const instantResults: SearchResult[] = [
+      ...local.albums.map((item) => ({
+        id: `album-${item.id}`,
+        title: item.title,
+        subtitle: `Álbum • ${item.artist.name}`,
+        type: "album" as const,
+        image: item.cover_medium,
+        link: `/album/${item.id}`,
+      })),
+      ...local.artists.map((item) => ({
+        id: `artist-${item.id}`,
+        title: item.name,
+        subtitle: `Artista • ${item.genre}`,
+        type: "artist" as const,
+        image: item.imageUrl || undefined,
+        link: `/artista/${item.id}`,
+      })),
+      ...local.tracks.map((item) => ({
+        id: `track-${item.id}`,
+        title: item.title,
+        subtitle: `Música • ${item.artist.name}`,
+        type: "track" as const,
+        image: item.album.cover_medium,
+        link: `/album/${item.album.id}`,
+      })),
+      ...matchedUsers,
+    ];
+
+    setResults(instantResults);
+    setIsLoading(instantResults.length === 0);
+
+    // 2. Busca complementar no MusicBrainz (com debounce suave)
+    const timer = setTimeout(async () => {
+      try {
         const [albumRes, artistRes, trackRes] = await Promise.all([
-          fetch(`/api/deezer/search/album?q=${q}&limit=5`),
-          fetch(`/api/deezer/search/artist?q=${q}&limit=4`),
-          fetch(`/api/deezer/search/track?q=${q}&limit=5`),
+          activeTab === "all" || activeTab === "album"
+            ? searchAlbumsInMusicBrainz(trimmed, 5, 0)
+            : Promise.resolve({ albums: [], total: 0 }),
+          activeTab === "all" || activeTab === "artist"
+            ? searchArtistsInMusicBrainz(trimmed, 4, 0)
+            : Promise.resolve({ artists: [], total: 0 }),
+          activeTab === "all" || activeTab === "track"
+            ? searchTracksInMusicBrainz(trimmed, 4)
+            : Promise.resolve([]),
         ]);
 
-        const albumData = await albumRes.json();
-        const artistData = await artistRes.json();
-        const trackData = await trackRes.json();
+        if (!isMounted) return;
 
-        let formattedResults: SearchResult[] = [];
-
-        // Mapear Álbuns
-        if (albumData?.data) {
-          albumData.data.forEach((item: any) => {
-            formattedResults.push({
-              id: `album-${item.id}`,
-              title: item.title,
-              subtitle: `Álbum • ${item.artist?.name || "Artista"}`,
-              type: "album" as const, // <-- Adicionar 'as const' resolve o erro do tipo string
-              image: item.cover_medium,
-              link: `/album/${item.id}`,
-            });
-          });
+        const mergedMap = new Map<string | number, SearchResult>();
+        for (const item of instantResults) {
+          if (item.type !== "user") {
+            mergedMap.set(item.id, item);
+          }
         }
 
-        // Mapear Artistas
-        if (artistData?.data) {
-          artistData.data.forEach((item: any) => {
-            formattedResults.push({
-              id: `artist-${item.id}`,
-              title: item.name,
-              subtitle: "Artista",
-              type: "artist" as const, // <-- Adicionar 'as const'
-              image: item.picture_medium,
-              link: `/artista/${item.id}`,
-            });
+        albumRes.albums.forEach((item) => {
+          const typeLabel =
+            item.record_type === "ep"
+              ? "EP"
+              : item.record_type === "single"
+                ? "Single"
+                : "Álbum";
+          mergedMap.set(`album-${item.id}`, {
+            id: `album-${item.id}`,
+            title: item.title,
+            subtitle: `${typeLabel} • ${item.artist?.name || "Artista"}`,
+            type: "album",
+            image: item.cover_medium,
+            link: `/album/${item.id}`,
           });
-        }
+        });
 
-        // Mapear Músicas
-        if (trackData?.data) {
-          trackData.data.forEach((item: any) => {
-            formattedResults.push({
-              id: `track-${item.id}`,
-              title: item.title,
-              subtitle: `Música • ${item.artist?.name || "Artista"}`,
-              type: "track" as const, // <-- Adicionar 'as const'
-              image: item.album?.cover_medium,
-              link: `/album/${item.album?.id}`,
-            });
+        artistRes.artists.forEach((item) => {
+          mergedMap.set(`artist-${item.id}`, {
+            id: `artist-${item.id}`,
+            title: item.name,
+            subtitle: `Artista • ${item.genre || "Catálogo"}`,
+            type: "artist",
+            image: item.imageUrl || undefined,
+            link: `/artista/${item.id}`,
           });
-        }
+        });
 
-        // Simular busca de Usuários do Musicpostr
-        const mockUsers: SearchResult[] = [
-          {
-            id: "user-1",
-            title: "Ana Beatriz",
-            subtitle: "@anabeat • Usuário",
-            type: "user" as const,
-            link: "/perfil",
-          },
-          {
-            id: "user-2",
-            title: "Lucas Sound",
-            subtitle: "@lucas_snd • Usuário",
-            type: "user" as const,
-            link: "/perfil",
-          },
-          {
-            id: "user-3",
-            title: "Beat Critic",
-            subtitle: "@beatcritic • Usuário",
-            type: "user" as const,
-            link: "/perfil",
-          },
-        ].filter(
-          (u) =>
-            u.title.toLowerCase().includes(query.toLowerCase()) ||
-            u.subtitle.toLowerCase().includes(query.toLowerCase()),
-        );
+        trackRes.forEach((item) => {
+          mergedMap.set(`track-${item.id}`, {
+            id: `track-${item.id}`,
+            title: item.title,
+            subtitle: `Música • ${item.artist?.name || "Artista"}`,
+            type: "track",
+            image: item.album?.cover_medium,
+            link: item.album?.id
+              ? `/album/${item.album.id}`
+              : `/artista/${item.artist?.id || ""}`,
+          });
+        });
 
-        formattedResults = [...formattedResults, ...mockUsers];
-
-        setResults(formattedResults);
+        setResults([...Array.from(mergedMap.values()), ...matchedUsers]);
       } catch (error) {
         console.error("Erro na busca global:", error);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-    }, 400);
+    }, 260);
 
-    return () => clearTimeout(timer);
-  }, [query]);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [query, activeTab]);
 
   const filteredResults =
     activeTab === "all" ? results : results.filter((r) => r.type === activeTab);
@@ -168,7 +218,6 @@ export function GlobalSearch() {
 
   return (
     <div className="relative" ref={searchRef}>
-      {/* Input de Busca na Topbar */}
       <div
         onClick={() => setIsOpen(true)}
         className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 px-3 py-1.5 rounded-full text-zinc-200 transition-all cursor-text w-40 sm:w-56 md:w-64"
@@ -198,10 +247,8 @@ export function GlobalSearch() {
         )}
       </div>
 
-      {/* Dropdown de Resultados */}
       {isOpen && query.trim() !== "" && (
         <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm md:w-96 md:max-w-none bg-zinc-950 border border-zinc-800/90 rounded-2xl shadow-2xl z-50 overflow-hidden backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Abas de Filtro */}
           <div className="flex items-center gap-1 p-2 border-b border-zinc-800 bg-zinc-900/50 overflow-x-auto">
             {(["all", "album", "artist", "track", "user"] as const).map(
               (tab) => (
@@ -224,13 +271,12 @@ export function GlobalSearch() {
                           ? "Músicas"
                           : "Usuários"}
                 </button>
-              ),
+              )
             )}
           </div>
 
-          {/* Lista de Resultados */}
           <div className="max-h-80 overflow-y-auto p-2 space-y-1">
-            {isLoading ? (
+            {isLoading && filteredResults.length === 0 ? (
               <div className="flex items-center justify-center py-8 text-zinc-500 gap-2 text-xs">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />{" "}
                 Buscando na comunidade e catálogo...
@@ -254,6 +300,9 @@ export function GlobalSearch() {
                     <img
                       src={item.image}
                       alt={item.title}
+                      loading="lazy"
+                      decoding="async"
+                      onError={handleCoverImageError}
                       className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-zinc-800"
                     />
                   ) : (

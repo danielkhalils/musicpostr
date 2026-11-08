@@ -31,16 +31,14 @@ export default defineConfig({
       // redes locais com proxy/antivírus que reemitem o certificado TLS.
       // Isso afeta apenas o servidor de desenvolvimento; a Vercel usa as
       // funções serverless em `api/` para falar com essas APIs em produção.
-      '/api/deezer': {
-        target: 'https://api.deezer.com',
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api\/deezer/, ''),
-      },
       '/api/musicbrainz': {
         target: 'https://musicbrainz.org/ws/2',
         changeOrigin: true,
         secure: false,
+        headers: {
+          'User-Agent': 'MusicPostr/1.2.0 ( https://musicpostr.vercel.app )',
+          'Accept': 'application/json',
+        },
         rewrite: (path) => path.replace(/^\/api\/musicbrainz/, ''),
       },
     },
