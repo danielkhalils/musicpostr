@@ -1,48 +1,13 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
-
-interface RssItem {
-  title: string;
-  link: string;
-  pubDate: string;
-  author?: string;
-  thumbnail?: string;
-  description?: string;
-  enclosure?: { link?: string };
-}
-
-async function fetchNewsArticles() {
-  const response = await fetch(
-    'https://api.rss2json.com/v1/api.json?rss_url=https://pitchfork.com/feed/rss'
-  );
-  const data = (await response.json()) as { items?: RssItem[] };
-  const items = Array.isArray(data.items) ? data.items : [];
-
-  return items.map((item) => {
-    let imgUrl = item.thumbnail || item.enclosure?.link || '';
-    if (!imgUrl && item.description) {
-      const match = item.description.match(/<img[^>]+src="([^">]+)"/);
-      if (match) imgUrl = match[1];
-    }
-
-    return {
-      title: item.title,
-      link: item.link,
-      pubDate: item.pubDate,
-      author: item.author || 'Pitchfork',
-      thumbnail: imgUrl,
-      description:
-        (item.description?.replace(/<[^>]*>?/gm, '') || '').substring(0, 150) + '...',
-    };
-  });
-}
+import { fetchNewsArticles } from './shared/news.ts';
 
 function newsApiPlugin(): Plugin {
   return {
     name: 'musicpostr-news-api',
     configureServer(server) {
       server.middlewares.use('/api/news', async (_req, res) => {
-        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
         res.setHeader('Access-Control-Allow-Origin', '*');
 
         try {
@@ -62,14 +27,18 @@ export default defineConfig({
   plugins: [react(), newsApiPlugin()],
   server: {
     proxy: {
-      '/api/deezer': {
-        target: 'https://api.deezer.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/deezer/, ''),
-      },
+      // `secure: false` evita o erro "unable to verify the first certificate" em
+      // redes locais com proxy/antivírus que reemitem o certificado TLS.
+      // Isso afeta apenas o servidor de desenvolvimento; a Vercel usa as
+      // funções serverless em `api/` para falar com essas APIs em produção.
       '/api/musicbrainz': {
         target: 'https://musicbrainz.org/ws/2',
         changeOrigin: true,
+        secure: false,
+        headers: {
+          'User-Agent': 'MusicPostr/1.2.0 ( https://musicpostr.vercel.app )',
+          'Accept': 'application/json',
+        },
         rewrite: (path) => path.replace(/^\/api\/musicbrainz/, ''),
       },
     },

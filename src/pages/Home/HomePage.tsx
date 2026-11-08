@@ -9,7 +9,6 @@ import {
   ArrowRight,
   ShieldCheck,
   Mail,
-  Loader2,
   Newspaper,
   ExternalLink,
   Flame,
@@ -18,35 +17,21 @@ import {
   Compass,
   ChevronLeft,
   ChevronRight,
+  Headphones,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
+import {
+  type CatalogAlbum,
+  type CatalogTrack,
+  getHighlightAlbums,
+  getPopularAlbumsByInternalActivity,
+  getTopRatedAlbumsByInternalReviews,
+  getInitialNewReleases,
+  fetchNewReleasesFromMusicBrainz,
+  INITIAL_TOP_TRACKS,
+} from "../../services/musicBrainz.service";
+import { handleCoverImageError } from "../../services/coverArt.service";
 import "./HomePage.css";
-
-interface Album {
-  id: number;
-  title: string;
-  cover_xl?: string;
-  cover_big?: string;
-  cover_medium?: string;
-  release_date?: string;
-  artist: {
-    name: string;
-  };
-}
-
-interface Track {
-  id: number;
-  title: string;
-  duration: number;
-  preview: string;
-  artist: {
-    name: string;
-  };
-  album: {
-    title: string;
-    cover_medium: string;
-  };
-}
 
 interface NewsArticle {
   title: string;
@@ -58,29 +43,35 @@ interface NewsArticle {
 }
 
 const GENRES = [
-  { id: "pop", name: "Pop", color: "from-pink-500 to-rose-600" },
-  { id: "rock", name: "Rock", color: "from-amber-600 to-red-700" },
-  { id: "hip-hop", name: "Hip-Hop", color: "from-purple-600 to-indigo-800" },
-  { id: "electronic", name: "Eletrônica", color: "from-cyan-500 to-blue-600" },
+  { id: "Pop", name: "Pop", color: "from-pink-500 to-rose-600" },
+  { id: "Rock", name: "Rock", color: "from-amber-600 to-red-700" },
+  { id: "Hip-Hop", name: "Hip-Hop", color: "from-purple-600 to-indigo-800" },
+  { id: "Eletrônica", name: "Eletrônica", color: "from-cyan-500 to-blue-600" },
   {
-    id: "indie",
+    id: "Indie",
     name: "Indie / Alternativo",
     color: "from-emerald-500 to-teal-700",
   },
-  { id: "r-b", name: "R&B", color: "from-orange-500 to-amber-600" },
+  { id: "R&B", name: "R&B", color: "from-orange-500 to-amber-600" },
 ];
 
 export default function HomePage() {
-  const [highlights, setHighlights] = useState<Album[]>([]);
-  const [popularAlbums, setPopularAlbums] = useState<Album[]>([]);
-  const [newReleases, setNewReleases] = useState<Album[]>([]);
-  const [topRatedAlbums, setTopRatedAlbums] = useState<Album[]>([]);
-  const [topTracks, setTopTracks] = useState<Track[]>([]);
+  const [highlights, setHighlights] = useState<CatalogAlbum[]>(() =>
+    getHighlightAlbums(10)
+  );
+  const [popularAlbums, setPopularAlbums] = useState<CatalogAlbum[]>(() =>
+    getPopularAlbumsByInternalActivity(8)
+  );
+  const [newReleases, setNewReleases] = useState<CatalogAlbum[]>(() =>
+    getInitialNewReleases(8)
+  );
+  const [topRatedAlbums, setTopRatedAlbums] = useState<CatalogAlbum[]>(() =>
+    getTopRatedAlbumsByInternalReviews(8)
+  );
+  const [topTracks] = useState<CatalogTrack[]>(INITIAL_TOP_TRACKS);
   const [news, setNews] = useState<NewsArticle[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Ref para controlar a rolagem horizontal das Top Músicas (estilo YouTube Music)
   const tracksScrollRef = useRef<HTMLDivElement>(null);
 
   const scrollTracks = (direction: "left" | "right") => {
@@ -98,6 +89,23 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    function syncInternalSections() {
+      setHighlights(getHighlightAlbums(10));
+      setPopularAlbums(getPopularAlbumsByInternalActivity(8));
+      setTopRatedAlbums(getTopRatedAlbumsByInternalReviews(8));
+    }
+
+    window.addEventListener("musicpostr:albums-updated", syncInternalSections);
+    return () =>
+      window.removeEventListener(
+        "musicpostr:albums-updated",
+        syncInternalSections
+      );
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
     async function parseJson(res: Response | null) {
       if (!res || !res.ok) return null;
       const contentType = res.headers.get("content-type") || "";
@@ -109,55 +117,28 @@ export default function HomePage() {
       }
     }
 
-    async function fetchHomeData() {
-      setIsLoading(true);
-      try {
-        const [releasesRes, tracksRes, newsRes] = await Promise.all([
-          fetch("/api/deezer/chart/0/albums?limit=30"),
-          fetch("/api/deezer/chart/0/tracks?limit=20").catch(() => null),
-          fetch("/api/news").catch(() => null),
-        ]);
-
-        const releasesData = await parseJson(releasesRes);
-        const tracksData = await parseJson(tracksRes);
-
-        if (releasesData && releasesData.data) {
-          const albums = releasesData.data;
-          setHighlights(albums.slice(0, 10)); // AUMENTADO PARA 10 ITENS PARA GERAR ROLAGEM
-          setPopularAlbums(albums.slice(10, 18));
-          setNewReleases(
-            albums.slice(18, 26).length > 0
-              ? albums.slice(18, 26)
-              : albums.slice(10, 18),
-          );
-          setTopRatedAlbums([...albums].reverse().slice(0, 8));
+    // Atualiza Novos Lançamentos (MusicBrainz) e Notícias em segundo plano sem travar a tela
+    fetchNewReleasesFromMusicBrainz(8)
+      .then((mbNewReleases) => {
+        if (isMounted && mbNewReleases.length > 0) {
+          setNewReleases(mbNewReleases);
         }
+      })
+      .catch(() => {});
 
-        if (tracksData && tracksData.data) {
-          setTopTracks(tracksData.data.slice(0, 20));
-        }
-
-        const newsData = await parseJson(newsRes);
-        if (newsData && newsData.articles) {
+    fetch("/api/news")
+      .then((res) => parseJson(res))
+      .then((newsData) => {
+        if (isMounted && newsData && newsData.articles) {
           setNews(newsData.articles.slice(0, 3));
         }
-      } catch (error) {
-        console.error("Erro ao carregar dados da Home:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+      })
+      .catch(() => {});
 
-    fetchHomeData();
+    return () => {
+      isMounted = false;
+    };
   }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   const currentAlbum = highlights[activeIndex] || popularAlbums[0];
 
@@ -193,11 +174,17 @@ export default function HomePage() {
 
               <div className="hero-metadata">
                 <span className="hero-rating-pill">
-                  <Star className="h-3.5 w-3.5 fill-current" /> 9.4 / 10 (Média)
+                  <Star className="h-3.5 w-3.5 fill-current" />{" "}
+                  {currentAlbum.communityRating.toFixed(1)} / 10 (Média)
                 </span>
                 <span>•</span>
                 <span className="font-medium">
                   {currentAlbum.release_date?.substring(0, 4) || "2026"}
+                </span>
+                <span>•</span>
+                <span className="font-medium flex items-center gap-1">
+                  <Headphones className="h-3.5 w-3.5 text-primary" />
+                  {currentAlbum.listenersCount.toLocaleString("pt-BR")} ouvintes
                 </span>
               </div>
 
@@ -230,6 +217,8 @@ export default function HomePage() {
                     <img
                       src={item.cover_medium || item.cover_big}
                       alt={item.title}
+                      decoding="async"
+                      onError={handleCoverImageError}
                     />
                     <div className="hero-thumb-overlay">
                       <span className="text-[10px] font-bold text-white truncate">
@@ -244,7 +233,7 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* 2. ÁLBUNS POPULARES */}
+      {/* 2. ÁLBUNS POPULARES (BASEADO NAS AVALIAÇÕES INTERNAS E QUANTIDADE DE OUVINTES) */}
       <section className="content-section max-w-7xl mx-auto px-4 py-10 w-full">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
@@ -272,19 +261,31 @@ export default function HomePage() {
                 <img
                   src={album.cover_big || album.cover_medium}
                   alt={album.title}
+                  loading="lazy"
+                  decoding="async"
+                  onError={handleCoverImageError}
                 />
-                <div className="popular-rating-badge">★ 9.2</div>
+                <div className="popular-rating-badge">
+                  ★ {album.communityRating.toFixed(1)}
+                </div>
               </div>
               <h3 className="popular-title group-hover:text-primary">
                 {album.title}
               </h3>
               <p className="popular-artist">{album.artist?.name}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                <Headphones className="h-3 w-3 text-primary" />
+                <span>
+                  {album.listenersCount.toLocaleString("pt-BR")} ouvintes •{" "}
+                  {album.totalReviews} avaliações
+                </span>
+              </p>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* 3. LANÇAMENTOS RECENTES */}
+      {/* 3. LANÇAMENTOS RECENTES (MUSICBRAINZ API + COVER ART ARCHIVE) */}
       {newReleases.length > 0 && (
         <section className="content-section max-w-7xl mx-auto px-4 py-6 w-full">
           <div className="flex items-center justify-between mb-6">
@@ -313,9 +314,12 @@ export default function HomePage() {
                   <img
                     src={album.cover_big || album.cover_medium}
                     alt={album.title}
+                    loading="lazy"
+                    decoding="async"
+                    onError={handleCoverImageError}
                   />
                   <span className="absolute bottom-2 left-2 bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
-                    NOVO
+                    NOVO • {album.release_date?.substring(0, 4) || "2026"}
                   </span>
                 </div>
                 <h3 className="popular-title group-hover:text-primary">
@@ -328,7 +332,7 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* 4. MAIS BEM AVALIADOS PELA COMUNIDADE */}
+      {/* 4. MAIS BEM AVALIADOS PELA COMUNIDADE (BASEADO NA AVALIAÇÃO INTERNA DOS USUÁRIOS) */}
       <section className="content-section max-w-7xl mx-auto px-4 py-6 w-full">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
@@ -356,15 +360,21 @@ export default function HomePage() {
                 <img
                   src={album.cover_big || album.cover_medium}
                   alt={album.title}
+                  loading="lazy"
+                  decoding="async"
+                  onError={handleCoverImageError}
                 />
                 <div className="popular-rating-badge bg-amber-500 text-black font-extrabold">
-                  ★ 9.8
+                  ★ {album.communityRating.toFixed(1)}
                 </div>
               </div>
               <h3 className="popular-title group-hover:text-primary">
                 {album.title}
               </h3>
               <p className="popular-artist">{album.artist?.name}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {album.totalReviews} avaliações da comunidade
+              </p>
             </Link>
           ))}
         </div>
@@ -383,7 +393,7 @@ export default function HomePage() {
           {GENRES.map((genre) => (
             <Link
               key={genre.id}
-              to={`/search?genre=${genre.id}`}
+              to={`/reviews?genre=${encodeURIComponent(genre.id)}`}
               className={`h-28 rounded-2xl p-4 bg-gradient-to-br ${genre.color} flex flex-col justify-between shadow-md hover:scale-105 transition-transform text-white`}
             >
               <span className="font-bold text-sm tracking-wide">
@@ -395,7 +405,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. TOP MÚSICAS GLOBAIS (ESTILO YOUTUBE MUSIC COM BOTÕES DE NAVEGAÇÃO LATERAL) */}
+      {/* 6. TOP MÚSICAS GLOBAIS */}
       {topTracks.length > 0 && (
         <section className="content-section max-w-7xl mx-auto px-4 py-6 w-full">
           <div className="flex items-center justify-between mb-6">
@@ -425,13 +435,11 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Container horizontal com scroll oculto e comportamento estilo YouTube Music */}
           <div
             ref={tracksScrollRef}
             className="flex gap-4 overflow-x-auto scrollbar-none pb-2 snap-x snap-mandatory"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {/* Agrupa as 20 músicas em colunas de blocos (ex: 2 linhas por bloco, igual ao YT Music) */}
             <div className="grid grid-rows-4 grid-flow-col gap-3 min-w-full">
               {topTracks.map((track, idx) => (
                 <div
@@ -445,6 +453,9 @@ export default function HomePage() {
                     <img
                       src={track.album?.cover_medium}
                       alt={track.title}
+                      loading="lazy"
+                      decoding="async"
+                      onError={handleCoverImageError}
                       className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                     />
                     <div className="overflow-hidden">
@@ -457,7 +468,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <Link
-                    to={`/album/${track.id}`}
+                    to={`/album/${track.album.id}`}
                     className="flex-shrink-0 ml-2"
                   >
                     <Button
@@ -502,6 +513,8 @@ export default function HomePage() {
                       <img
                         src={item.thumbnail}
                         alt={item.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

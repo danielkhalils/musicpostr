@@ -1,22 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Loader2, Award, Music, Search, Calendar, User, Building2, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import {
+  Loader2,
+  Award,
+  Music,
+  Search,
+  Calendar,
+  User,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Headphones,
+} from 'lucide-react';
+import {
+  type CatalogAlbum,
+  getInternalAlbumsStore,
+  searchAlbumsInMusicBrainz,
+} from '../../services/musicBrainz.service';
+import { handleCoverImageError } from '../../services/coverArt.service';
 import './ReviewsPage.css';
-
-interface AlbumReviewItem {
-  id: number;
-  title: string;
-  cover_medium?: string;
-  cover_big?: string;
-  release_date?: string;
-  genreName?: string;
-  artist: {
-    name: string;
-  };
-  label?: string;
-  communityRating: number;
-  totalReviews: number;
-}
 
 const genresList = [
   { name: 'Todos', emoji: '🌟' },
@@ -30,110 +33,106 @@ const genresList = [
 ];
 
 export function ReviewsPage() {
-  const [albums, setAlbums] = useState<AlbumReviewItem[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const limit = 15;
+  const [searchParams] = useSearchParams();
+  const [albums, setAlbums] = useState<CatalogAlbum[]>(() =>
+    getInternalAlbumsStore().slice(0, limit)
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
-  
+
   const [selectedYear, setSelectedYear] = useState<string>('');
-  const [selectedGenre, setSelectedGenre] = useState<string>('Todos');
+  const [selectedGenre, setSelectedGenre] = useState<string>(() => {
+    const g = searchParams.get('genre');
+    if (
+      g &&
+      genresList.some((item) => item.name.toLowerCase() === g.toLowerCase())
+    ) {
+      return (
+        genresList.find((item) => item.name.toLowerCase() === g.toLowerCase())
+          ?.name || 'Todos'
+      );
+    }
+    return 'Todos';
+  });
   const [selectedLabel, setSelectedLabel] = useState<string>('');
 
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalResults, setTotalResults] = useState<number>(0);
-  const limit = 15;
+  const [totalResults, setTotalResults] = useState<number>(
+    () => getInternalAlbumsStore().length
+  );
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
+    const trimmed = searchTerm.trim();
+    if (!trimmed) {
+      setDebouncedSearch('');
       setCurrentPage(1);
-    }, 500);
+      return;
+    }
+
+    // Filtra instantaneamente em memória enquanto aguarda o debounce da API
+    const instantMatches = getInternalAlbumsStore().filter(
+      (a) =>
+        a.title.toLowerCase().includes(trimmed.toLowerCase()) ||
+        a.artist.name.toLowerCase().includes(trimmed.toLowerCase())
+    );
+    if (instantMatches.length > 0) {
+      setAlbums(instantMatches.slice(0, limit));
+    }
+
+    const timer = setTimeout(() => {
+      setDebouncedSearch(trimmed);
+      setCurrentPage(1);
+    }, 280);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
   useEffect(() => {
-    async function fetchAlbums() {
+    let isMounted = true;
+    const offset = (currentPage - 1) * limit;
+
+    if (!debouncedSearch.trim()) {
+      const store = getInternalAlbumsStore();
+      setAlbums(store.slice(offset, offset + limit));
+      setTotalResults(store.length);
+      setIsLoading(false);
+    } else {
       setIsLoading(true);
-      try {
-        const index = (currentPage - 1) * limit;
-        let url = '';
-
-        if (debouncedSearch.trim() !== '') {
-          url = `/api/deezer/search/album?q=${encodeURIComponent(debouncedSearch)}&index=${index}&limit=${limit}`;
-        } else {
-          url = `/api/deezer/chart/0/albums?index=${index}&limit=${limit}`;
-        }
-
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data && data.data) {
-          setTotalResults(typeof data.total === 'number' ? data.total : (data.data.length || 0));
-
-          const detailedAlbumsPromises = data.data.map(async (item: any, idx: number) => {
-            const uniqueIndex = index + idx;
-            const availableGenresOnly = genresList.filter(g => g.name !== 'Todos');
-            const assignedGenre = availableGenresOnly[uniqueIndex % availableGenresOnly.length].name;
-
-            try {
-              const detailRes = await fetch(`/api/deezer/album/${item.id}`);
-              const detailData = await detailRes.json();
-
-              const mockRating = Number((7.0 + ((uniqueIndex * 37) % 29) / 10).toFixed(1));
-              const mockTotalReviews = (uniqueIndex * 13) % 45 + 5;
-
-              return {
-                id: item.id,
-                title: item.title,
-                cover_medium: item.cover_medium || detailData.cover_medium,
-                cover_big: item.cover_big || detailData.cover_big,
-                release_date: detailData.release_date || '2025',
-                genreName: assignedGenre,
-                label: detailData.label || 'Independente',
-                artist: {
-                  name: item.artist?.name || 'Artista Desconhecido',
-                },
-                communityRating: mockRating > 10 ? 9.9 : mockRating,
-                totalReviews: mockTotalReviews,
-              };
-            } catch (err) {
-              return {
-                id: item.id,
-                title: item.title,
-                cover_medium: item.cover_medium,
-                cover_big: item.cover_big,
-                release_date: '2025',
-                genreName: assignedGenre,
-                label: 'Independente',
-                artist: { name: item.artist?.name || 'Artista' },
-                communityRating: 8.0,
-                totalReviews: 10,
-              };
-            }
-          });
-
-          const resolvedAlbums = await Promise.all(detailedAlbumsPromises);
-          setAlbums(resolvedAlbums);
-        } else {
-          setAlbums([]);
-          setTotalResults(0);
-        }
-      } catch (error) {
-        console.error('Erro ao buscar álbuns:', error);
-        setAlbums([]);
-        setTotalResults(0);
-      } finally {
-        setIsLoading(false);
-      }
+      searchAlbumsInMusicBrainz(debouncedSearch, limit, offset)
+        .then(({ albums: fetched, total }) => {
+          if (!isMounted) return;
+          setAlbums(fetched);
+          setTotalResults(total);
+        })
+        .catch((error) => {
+          console.error('Erro ao buscar álbuns no MusicBrainz:', error);
+        })
+        .finally(() => {
+          if (isMounted) setIsLoading(false);
+        });
     }
 
-    fetchAlbums();
+    const syncReviews = () => {
+      if (!debouncedSearch.trim()) {
+        const store = getInternalAlbumsStore();
+        setAlbums(store.slice(offset, offset + limit));
+        setTotalResults(store.length);
+      }
+    };
+    window.addEventListener('musicpostr:albums-updated', syncReviews);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('musicpostr:albums-updated', syncReviews);
+    };
   }, [debouncedSearch, currentPage]);
 
   const availableYears = Array.from(
     new Set(albums.map((a) => a.release_date?.substring(0, 4)).filter(Boolean))
-  ).sort().reverse();
+  )
+    .sort()
+    .reverse();
 
   const availableLabels = Array.from(
     new Set(albums.map((a) => a.label).filter(Boolean))
@@ -142,7 +141,8 @@ export function ReviewsPage() {
   const filteredAlbums = albums.filter((album) => {
     const albumYear = album.release_date?.substring(0, 4) || '';
     const matchYear = selectedYear ? albumYear === selectedYear : true;
-    const matchGenre = selectedGenre === 'Todos' ? true : album.genreName === selectedGenre;
+    const matchGenre =
+      selectedGenre === 'Todos' ? true : album.genreName === selectedGenre;
     const matchLabel = selectedLabel ? album.label === selectedLabel : true;
     return matchYear && matchGenre && matchLabel;
   });
@@ -152,20 +152,25 @@ export function ReviewsPage() {
       <div className="page-header-wrapper">
         <div>
           <h1 className="page-title">
-            <Award className="h-8 w-8 text-primary stroke-[2.5]" /> Avaliações da Comunidade
+            <Award className="h-8 w-8 text-primary stroke-[2.5]" /> Avaliações
+            da Comunidade
           </h1>
           <p className="page-subtitle">
-            Explore álbuns, utilize os filtros por ano, gênero e gravadora para refinar suas descobertas. 
-            {totalResults > 0 && <span className="ml-2 text-xs text-muted-foreground">({totalResults} resultados encontrados)</span>}
+            Explore álbuns, EPs e singles no MusicBrainz, utilize os filtros por
+            ano, gênero e gravadora para refinar suas descobertas.
+            {totalResults > 0 && (
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({totalResults} resultados encontrados)
+              </span>
+            )}
           </p>
         </div>
 
-        {/* Barra de Pesquisa */}
         <div className="reviews-search-wrapper">
           <Search className="reviews-search-icon" />
           <input
             type="text"
-            placeholder="Pesquisar álbum ou artista..."
+            placeholder="Pesquisar álbum, EP, single ou artista..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="reviews-search-input"
@@ -173,7 +178,6 @@ export function ReviewsPage() {
         </div>
       </div>
 
-      {/* Seção de Gêneros em Grade com Emojis */}
       <div className="genre-grid-section mb-6">
         <h2 className="section-heading mb-3">Filtrar por Momento ou Gênero</h2>
         <div className="genre-cards-grid">
@@ -181,7 +185,9 @@ export function ReviewsPage() {
             <button
               key={item.name}
               onClick={() => setSelectedGenre(item.name)}
-              className={`genre-card-item ${selectedGenre === item.name ? 'active' : ''}`}
+              className={`genre-card-item ${
+                selectedGenre === item.name ? 'active' : ''
+              }`}
             >
               <span className="genre-card-emoji">{item.emoji}</span>
               <span className="genre-card-name">{item.name}</span>
@@ -190,7 +196,6 @@ export function ReviewsPage() {
         </div>
       </div>
 
-      {/* Painel de Filtros Secundários (Ano e Gravadora) */}
       <div className="reviews-filter-bar mb-8">
         <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
           <Filter className="h-4 w-4 text-primary" /> Filtros Adicionais:
@@ -238,7 +243,6 @@ export function ReviewsPage() {
         </div>
       </div>
 
-      {/* Tela de Loading */}
       {isLoading ? (
         <div className="min-h-[50vh] flex items-center justify-center">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -263,6 +267,9 @@ export function ReviewsPage() {
                       <img
                         src={album.cover_medium || album.cover_big}
                         alt={album.title}
+                        loading="lazy"
+                        decoding="async"
+                        onError={handleCoverImageError}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -271,14 +278,16 @@ export function ReviewsPage() {
                     )}
 
                     <div className="review-card-score-badge">
-                      <span className="review-card-score-number">{album.communityRating}</span>
+                      <span className="review-card-score-number">
+                        {album.communityRating.toFixed(1)}
+                      </span>
                     </div>
                   </div>
 
                   <h3 className="review-album-title" title={album.title}>
                     {album.title}
                   </h3>
-                  
+
                   <p className="review-album-artist flex items-center gap-1.5 mt-1">
                     <User className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                     <span className="truncate">{album.artist.name}</span>
@@ -287,11 +296,22 @@ export function ReviewsPage() {
                   <div className="mt-2 space-y-1 text-[11px] text-muted-foreground">
                     <p className="flex items-center gap-1.5 truncate">
                       <Building2 className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate" title={album.label}>{album.label}</span>
+                      <span className="truncate" title={album.label}>
+                        {album.label}
+                      </span>
                     </p>
                     <p className="flex items-center gap-1.5">
                       <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                      <span>{album.release_date?.substring(0, 4) || 'Desconhecido'} ({album.genreName})</span>
+                      <span>
+                        {album.release_date?.substring(0, 4) || 'Desconhecido'}{' '}
+                        ({album.genreName})
+                      </span>
+                    </p>
+                    <p className="flex items-center gap-1.5">
+                      <Headphones className="h-3 w-3 text-primary flex-shrink-0" />
+                      <span>
+                        {album.listenersCount.toLocaleString('pt-BR')} ouvintes
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -304,7 +324,6 @@ export function ReviewsPage() {
             ))}
           </div>
 
-          {/* Paginação */}
           <div className="pagination-container">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
