@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Disc, Mic, Music, User, Loader2, X } from "lucide-react";
+import {
+  searchAlbumsInMusicBrainz,
+  searchArtistsInMusicBrainz,
+  searchTracksInMusicBrainz,
+} from "../../services/musicBrainz.service";
+import { handleCoverImageError } from "../../services/coverArt.service";
 import "./GlobalSearch.css";
 
 interface SearchResult {
@@ -38,7 +44,7 @@ export function GlobalSearch() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Busca integrada na API do Deezer + Mock de Usuários da comunidade
+  // Busca integrada no MusicBrainz + Cover Art Archive + Usuários da comunidade
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
@@ -49,29 +55,28 @@ export function GlobalSearch() {
     const timer = setTimeout(async () => {
       setIsLoading(true);
       try {
-        const q = encodeURIComponent(query);
-
-        // Requisições paralelas para álbuns, artistas e músicas via proxy do Deezer
         const [albumRes, artistRes, trackRes] = await Promise.all([
-          fetch(`/api/deezer/search/album?q=${q}&limit=5`),
-          fetch(`/api/deezer/search/artist?q=${q}&limit=4`),
-          fetch(`/api/deezer/search/track?q=${q}&limit=5`),
+          searchAlbumsInMusicBrainz(query, 5, 0),
+          searchArtistsInMusicBrainz(query, 4, 0),
+          searchTracksInMusicBrainz(query, 5),
         ]);
-
-        const albumData = await albumRes.json();
-        const artistData = await artistRes.json();
-        const trackData = await trackRes.json();
 
         let formattedResults: SearchResult[] = [];
 
-        // Mapear Álbuns
-        if (albumData?.data) {
-          albumData.data.forEach((item: any) => {
+        // Mapear Álbuns, EPs e Singles
+        if (albumRes.albums) {
+          albumRes.albums.forEach((item) => {
+            const typeLabel =
+              item.record_type === "ep"
+                ? "EP"
+                : item.record_type === "single"
+                  ? "Single"
+                  : "Álbum";
             formattedResults.push({
               id: `album-${item.id}`,
               title: item.title,
-              subtitle: `Álbum • ${item.artist?.name || "Artista"}`,
-              type: "album" as const, // <-- Adicionar 'as const' resolve o erro do tipo string
+              subtitle: `${typeLabel} • ${item.artist?.name || "Artista"}`,
+              type: "album" as const,
               image: item.cover_medium,
               link: `/album/${item.id}`,
             });
@@ -79,29 +84,31 @@ export function GlobalSearch() {
         }
 
         // Mapear Artistas
-        if (artistData?.data) {
-          artistData.data.forEach((item: any) => {
+        if (artistRes.artists) {
+          artistRes.artists.forEach((item) => {
             formattedResults.push({
               id: `artist-${item.id}`,
               title: item.name,
-              subtitle: "Artista",
-              type: "artist" as const, // <-- Adicionar 'as const'
-              image: item.picture_medium,
+              subtitle: `Artista • ${item.genre || "Catálogo"}`,
+              type: "artist" as const,
+              image: item.imageUrl || undefined,
               link: `/artista/${item.id}`,
             });
           });
         }
 
         // Mapear Músicas
-        if (trackData?.data) {
-          trackData.data.forEach((item: any) => {
+        if (trackRes) {
+          trackRes.forEach((item) => {
             formattedResults.push({
               id: `track-${item.id}`,
               title: item.title,
               subtitle: `Música • ${item.artist?.name || "Artista"}`,
-              type: "track" as const, // <-- Adicionar 'as const'
+              type: "track" as const,
               image: item.album?.cover_medium,
-              link: `/album/${item.album?.id}`,
+              link: item.album?.id
+                ? `/album/${item.album.id}`
+                : `/artista/${item.artist?.id || ""}`,
             });
           });
         }
@@ -120,19 +127,19 @@ export function GlobalSearch() {
             title: "Lucas Sound",
             subtitle: "@lucas_snd • Usuário",
             type: "user" as const,
-            link: "/perfil",
+            link: "/perfil/lucas_snd",
           },
           {
             id: "user-3",
             title: "Beat Critic",
             subtitle: "@beatcritic • Usuário",
             type: "user" as const,
-            link: "/perfil",
+            link: "/perfil/beatcritic",
           },
         ].filter(
           (u) =>
             u.title.toLowerCase().includes(query.toLowerCase()) ||
-            u.subtitle.toLowerCase().includes(query.toLowerCase()),
+            u.subtitle.toLowerCase().includes(query.toLowerCase())
         );
 
         formattedResults = [...formattedResults, ...mockUsers];
@@ -224,7 +231,7 @@ export function GlobalSearch() {
                           ? "Músicas"
                           : "Usuários"}
                 </button>
-              ),
+              )
             )}
           </div>
 
@@ -254,6 +261,7 @@ export function GlobalSearch() {
                     <img
                       src={item.image}
                       alt={item.title}
+                      onError={handleCoverImageError}
                       className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-zinc-800"
                     />
                   ) : (

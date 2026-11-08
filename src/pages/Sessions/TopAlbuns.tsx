@@ -1,94 +1,53 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Disc } from 'lucide-react';
-import "../Artists/ArtistDetails/ArtistDetail.css";
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft, Disc, Headphones } from 'lucide-react';
+import {
+  type CatalogAlbum,
+  getPopularAlbumsByInternalActivity,
+} from '../../services/musicBrainz.service';
+import { handleCoverImageError } from '../../services/coverArt.service';
+import '../Artists/ArtistDetails/ArtistDetail.css';
 import './TopAlbuns.css';
-
-// Exemplo de interface para os álbuns
-interface Album {
-  id: string;
-  title: string;
-  artist: string;
-  coverUrl: string;
-  rating: number;
-  releaseYear: number;
-  genre: string;
-}
 
 export function TopAlbuns() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('Todos');
+  const [allAlbums, setAllAlbums] = useState<CatalogAlbum[]>(() =>
+    getPopularAlbumsByInternalActivity(30)
+  );
 
-  // Lista expandida para a página de listagem completa
-  const allAlbums: Album[] = [
-    {
-      id: '1',
-      title: 'After Hours',
-      artist: 'The Weeknd',
-      coverUrl: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&h=300&fit=crop',
-      rating: 4.8,
-      releaseYear: 2020,
-      genre: 'Pop',
-    },
-    {
-      id: '2',
-      title: 'Future Nostalgia',
-      artist: 'Dua Lipa',
-      coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&h=300&fit=crop',
-      rating: 4.7,
-      releaseYear: 2020,
-      genre: 'Pop',
-    },
-    {
-      id: '3',
-      title: 'Un Verano Sin Ti',
-      artist: 'Bad Bunny',
-      coverUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop',
-      rating: 4.9,
-      releaseYear: 2022,
-      genre: 'Urbano',
-    },
-    {
-      id: '4',
-      title: 'RENAISSANCE',
-      artist: 'Beyoncé',
-      coverUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop',
-      rating: 4.9,
-      releaseYear: 2022,
-      genre: 'Pop',
-    },
-    {
-      id: '5',
-      title: 'Midnights',
-      artist: 'Taylor Swift',
-      coverUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300&h=300&fit=crop',
-      rating: 4.6,
-      releaseYear: 2022,
-      genre: 'Pop',
-    },
-    {
-      id: '6',
-      title: 'SOS',
-      artist: 'SZA',
-      coverUrl: 'https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?w=300&h=300&fit=crop',
-      rating: 4.8,
-      releaseYear: 2022,
-      genre: 'R&B',
-    },
+  useEffect(() => {
+    const syncPopular = () => {
+      setAllAlbums(getPopularAlbumsByInternalActivity(30));
+    };
+    window.addEventListener('musicpostr:albums-updated', syncPopular);
+    return () =>
+      window.removeEventListener('musicpostr:albums-updated', syncPopular);
+  }, []);
+
+  const genres = [
+    'Todos',
+    'Pop',
+    'Rock',
+    'Hip-Hop',
+    'Eletrônica',
+    'Indie',
+    'R&B',
+    'Samba e pagode',
   ];
-
-  const genres = ['Todos', 'Pop', 'Urbano', 'R&B'];
 
   const filteredAlbums = allAlbums.filter((album) => {
     const matchesSearch =
       album.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      album.artist.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesGenre = selectedGenre === 'Todos' || album.genre === selectedGenre;
+      album.artist.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGenre =
+      selectedGenre === 'Todos' ||
+      album.genreName.toLowerCase() === selectedGenre.toLowerCase();
     return matchesSearch && matchesGenre;
   });
 
-  const bannerBackdrop = [...allAlbums].sort((a, b) => b.rating - a.rating)[0]?.coverUrl;
+  const bannerBackdrop = allAlbums[0]?.cover_xl || allAlbums[0]?.cover_big;
 
   return (
     <div className="artist-detail-container">
@@ -109,9 +68,9 @@ export function TopAlbuns() {
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight text-foreground drop-shadow-xs break-words">
               Álbuns Populares do Momento
             </h1>
-            {/* Subtítulo espelhado no padrão do ArtistDetail */}
             <p className="text-muted-foreground mt-2 text-sm md:text-base font-medium">
-              Explore a listagem completa dos lançamentos e álbuns mais aclamados pela comunidade e pela crítica.
+              Ranking baseado nas avaliações internas dos usuários e na
+              quantidade de ouvintes na comunidade.
             </p>
           </div>
         </div>
@@ -120,7 +79,8 @@ export function TopAlbuns() {
       <div className="artist-main-content">
         <div>
           <h2 className="section-title">
-            <Disc className="h-6 w-6 text-primary" /> Ranking de Álbuns
+            <Disc className="h-6 w-6 text-primary" /> Ranking de Popularidade
+            Interna
           </h2>
 
           <div className="top-albuns-filters">
@@ -136,7 +96,9 @@ export function TopAlbuns() {
               {genres.map((genre) => (
                 <button
                   key={genre}
-                  className={`genre-chip ${selectedGenre === genre ? 'active' : ''}`}
+                  className={`genre-chip ${
+                    selectedGenre === genre ? 'active' : ''
+                  }`}
                   onClick={() => setSelectedGenre(genre)}
                 >
                   {genre}
@@ -148,24 +110,37 @@ export function TopAlbuns() {
           {filteredAlbums.length > 0 ? (
             <div className="releases-grid">
               {filteredAlbums.map((album) => (
-                <div key={album.id} className="release-card group cursor-pointer">
+                <Link
+                  key={album.id}
+                  to={`/album/${album.id}`}
+                  className="release-card group cursor-pointer"
+                >
                   <div>
                     <div className="release-cover-box relative">
                       <img
-                        src={album.coverUrl}
+                        src={album.cover_big || album.cover_medium}
                         alt={album.title}
+                        onError={handleCoverImageError}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      <span className="album-rating">★ {album.rating.toFixed(1)}</span>
+                      <span className="album-rating">
+                        ★ {album.communityRating.toFixed(1)}
+                      </span>
                     </div>
                     <h3 className="font-medium text-[var(--foreground)] text-sm line-clamp-1 group-hover:text-primary transition-colors">
                       {album.title}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-1">{album.artist}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{album.releaseYear}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {album.artist.name}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
+                      <Headphones className="h-3 w-3 text-primary" />
+                      {album.listenersCount.toLocaleString('pt-BR')} ouvintes •{' '}
+                      {album.totalReviews} avaliações
+                    </p>
                   </div>
-                  <span className="release-tag">{album.genre}</span>
-                </div>
+                  <span className="release-tag">{album.genreName}</span>
+                </Link>
               ))}
             </div>
           ) : (

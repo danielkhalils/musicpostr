@@ -9,17 +9,15 @@ import {
   Award,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
+import {
+  type CatalogArtist,
+  searchArtistsInMusicBrainz,
+} from "../../services/musicBrainz.service";
+import { handleCoverImageError } from "../../services/coverArt.service";
 import "./ArtistsPage.css";
 
-interface Artist {
-  id: string;
-  name: string;
-  imageUrl?: string;
-  nbFans?: number;
-}
-
 export function ArtistsPage() {
-  const [artists, setArtists] = useState<Artist[]>([]);
+  const [artists, setArtists] = useState<CatalogArtist[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,18 +48,22 @@ export function ArtistsPage() {
     }
   }, [followedIds]);
 
-  const toggleFollow = (artist: Artist, e: React.MouseEvent) => {
-    e.preventDefault(); // Evita que o clique navegue para a página do artista ao clicar no botão
+  const toggleFollow = (artist: CatalogArtist, e: React.MouseEvent) => {
+    e.preventDefault();
     setFollowedIds((prev) => {
       const isFollowing = prev.includes(artist.id);
       if (isFollowing) {
         return prev.filter((id) => id !== artist.id);
       } else {
-        // Opcional: Salvar os dados completos do artista no localStorage para a página de Ídolos renderizar se necessário
-        const currentIdolsData = JSON.parse(localStorage.getItem("musicpostr_idols_data") || "[]");
+        const currentIdolsData = JSON.parse(
+          localStorage.getItem("musicpostr_idols_data") || "[]"
+        );
         if (!currentIdolsData.some((a: any) => a.id === artist.id)) {
           currentIdolsData.push(artist);
-          localStorage.setItem("musicpostr_idols_data", JSON.stringify(currentIdolsData));
+          localStorage.setItem(
+            "musicpostr_idols_data",
+            JSON.stringify(currentIdolsData)
+          );
         }
         return [...prev, artist.id];
       }
@@ -69,84 +71,28 @@ export function ArtistsPage() {
   };
 
   useEffect(() => {
-    async function fetchDeezerArtists() {
+    async function fetchMusicBrainzArtists() {
       setIsLoading(true);
       try {
-        const trimmedQuery = searchQuery.trim();
-        const index = (page - 1) * ITEMS_PER_PAGE;
+        const offset = (page - 1) * ITEMS_PER_PAGE;
+        const { artists: fetchedArtists, total } =
+          await searchArtistsInMusicBrainz(searchQuery, ITEMS_PER_PAGE, offset);
 
-        const url = trimmedQuery !== ""
-          ? `/api/deezer/search/artist?q=${encodeURIComponent(trimmedQuery)}&index=${index}&limit=${ITEMS_PER_PAGE}`
-          : `/api/deezer/chart/0/artists?index=${index}&limit=${ITEMS_PER_PAGE}`;
-
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data && data.data && data.data.length > 0) {
-          const rawArtists = data.data;
-
-          const blockedNames = [
-            "various artists", "unknown", "various", "artist", "none", "anonymous", "soundtrack",
-            "original soundtrack", "motion picture soundtrack", "various composers", 
-            "karaoke", "tribute", "orchestra", "choir", "ensemble", "studio cast",
-            "cast", "ensemble cast", "studio musicians", "instrumental", "dj", "dj mix",
-            "vários artistas", "artista desconhecido", "desconhecido", "anônimo", 
-            "varios", "banda sonora", "trilha sonora", "test", "teste", "n/a"
-          ];
-
-          const validArtists = rawArtists.filter((artist: any) => {
-            const name = artist.name.toLowerCase().trim();
-            if (!name || name.startsWith("[") || name.endsWith("]")) return false;
-            if (blockedNames.includes(name)) return false;
-            return true;
-          });
-
-          const usedImages = new Set<string>();
-
-          const formattedArtists = validArtists.map((artist: any) => {
-            const imageUrl =
-              artist.picture_xl ||
-              artist.picture_big ||
-              artist.picture_medium ||
-              "";
-
-            let finalImageUrl = "";
-            if (imageUrl && !usedImages.has(imageUrl)) {
-              finalImageUrl = imageUrl;
-              usedImages.add(imageUrl);
-            }
-
-            return {
-              id: artist.id.toString(),
-              name: artist.name,
-              imageUrl: finalImageUrl,
-              nbFans: artist.nb_fans || artist.nb_fan,
-            };
-          });
-
-          setArtists(formattedArtists);
-          const isSearching = trimmedQuery !== "";
-          if (isSearching) {
-            const total = typeof data.total === "number" ? data.total : 0;
-            setHasMore(Boolean(data.next) || (total > 0 ? index + rawArtists.length < total : rawArtists.length >= ITEMS_PER_PAGE));
-          } else {
-            // No chart do Deezer, o endpoint retorna blocos de 18 até o teto de 100 artistas
-            setHasMore(rawArtists.length === ITEMS_PER_PAGE && index + rawArtists.length < 100);
-          }
-        } else {
-          setArtists([]);
-          setHasMore(false);
-        }
+        setArtists(fetchedArtists);
+        setHasMore(
+          offset + fetchedArtists.length < total &&
+            fetchedArtists.length >= ITEMS_PER_PAGE
+        );
       } catch (error) {
-        console.error("Erro ao buscar artistas no Deezer:", error);
+        console.error("Erro ao buscar artistas no MusicBrainz:", error);
       } finally {
         setIsLoading(false);
       }
     }
 
     const timeoutId = setTimeout(() => {
-      fetchDeezerArtists();
-    }, 400);
+      fetchMusicBrainzArtists();
+    }, 350);
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery, page]);
@@ -154,13 +100,11 @@ export function ArtistsPage() {
   return (
     <div className="artists-page-container">
       <div className="artists-content-wrapper">
-        
         <div className="artists-header">
-          <h1 className="artists-title">
-            Buscar Artistas
-          </h1>
+          <h1 className="artists-title">Buscar Artistas</h1>
           <p className="artists-subtitle">
-            Pesquise e clique em um artista para ver o banner, discografia e álbuns oficiais
+            Pesquise e clique em um artista para ver o banner, discografia,
+            álbuns, EPs e singles oficiais
           </p>
 
           <div className="artists-search-box">
@@ -202,6 +146,7 @@ export function ArtistsPage() {
                         <img
                           src={artist.imageUrl}
                           alt={artist.name}
+                          onError={handleCoverImageError}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -209,12 +154,12 @@ export function ArtistsPage() {
                       )}
                     </div>
 
-                    <span className="artist-name">
-                      {artist.name}
-                    </span>
+                    <span className="artist-name">{artist.name}</span>
 
                     <span className="artist-fans">
-                      {artist.nbFans ? `${artist.nbFans.toLocaleString()} fãs` : "Artista"}
+                      {artist.nbFans
+                        ? `${artist.nbFans.toLocaleString("pt-BR")} ouvintes`
+                        : artist.genre || "Artista"}
                     </span>
                   </Link>
 
@@ -229,9 +174,13 @@ export function ArtistsPage() {
                           ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
                           : "bg-card/80 text-foreground border-border hover:bg-muted"
                       }`}
-                      title={isFollowing ? "Deixar de seguir" : "Seguir como ídolo"}
+                      title={
+                        isFollowing ? "Deixar de seguir" : "Seguir como ídolo"
+                      }
                     >
-                      <Award className={`h-3 w-3 ${isFollowing ? "fill-current" : ""}`} />
+                      <Award
+                        className={`h-3 w-3 ${isFollowing ? "fill-current" : ""}`}
+                      />
                       {isFollowing ? "Seguindo" : "Seguir"}
                     </Button>
                   </div>
@@ -249,7 +198,7 @@ export function ArtistsPage() {
             size="sm"
             onClick={() => {
               setPage((prev) => Math.max(prev - 1, 1));
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             disabled={page === 1 || isLoading}
             className="artists-pagination-btn"
@@ -257,16 +206,14 @@ export function ArtistsPage() {
             <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
           </Button>
 
-          <span className="artists-page-indicator">
-            Página {page}
-          </span>
+          <span className="artists-page-indicator">Página {page}</span>
 
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
               setPage((prev) => prev + 1);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             disabled={!hasMore || isLoading}
             className="artists-pagination-btn"

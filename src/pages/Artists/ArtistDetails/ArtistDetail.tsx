@@ -10,22 +10,18 @@ import {
 } from "lucide-react";
 import "./ArtistDetail.css";
 import { Button } from "../../../components/ui/button";
-
-interface DeezerAlbum {
-  id: number;
-  title: string;
-  cover_medium?: string;
-  cover_big?: string;
-  release_date?: string;
-  record_type?: string;
-}
+import {
+  type CatalogAlbum,
+  fetchArtistDetailsFromMusicBrainz,
+} from "../../../services/musicBrainz.service";
+import { handleCoverImageError } from "../../../services/coverArt.service";
 
 export function ArtistDetail() {
   const { id } = useParams<{ id: string }>();
   const [artistName, setArtistName] = useState("");
   const [artistBanner, setArtistBanner] = useState("");
-  const [albums, setAlbums] = useState<DeezerAlbum[]>([]);
-  const [epsAndSingles, setEpsAndSingles] = useState<DeezerAlbum[]>([]);
+  const [albums, setAlbums] = useState<CatalogAlbum[]>([]);
+  const [epsAndSingles, setEpsAndSingles] = useState<CatalogAlbum[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(10);
@@ -33,58 +29,28 @@ export function ArtistDetail() {
 
   useEffect(() => {
     async function fetchArtistDetails() {
+      if (!id) return;
       setIsLoading(true);
       setVisibleAlbumsCount(10);
       setVisibleEpsCount(10);
 
       try {
-        const artistRes = await fetch(`/api/deezer/artist/${id}`);
-        const artistData = await artistRes.json();
-
-        if (artistData && artistData.name) {
-          setArtistName(artistData.name);
-          setArtistBanner(
-            artistData.picture_xl ||
-              artistData.picture_big ||
-              artistData.picture_medium ||
-              "",
-          );
-        }
-
-        const albumsRes = await fetch(
-          `/api/deezer/artist/${id}/albums?limit=100`,
-        );
-        const albumsData = await albumsRes.json();
-
-        if (albumsData && albumsData.data) {
-          const uniqueReleases = Array.from(
-            new Map(
-              albumsData.data.map((item: any) => [item.title, item]),
-            ).values(),
-          ) as DeezerAlbum[];
-
-          const studioAlbums = uniqueReleases.filter(
-            (item) => !item.record_type || item.record_type === "album",
-          );
-
-          const otherReleases = uniqueReleases.filter(
-            (item) =>
-              item.record_type === "ep" || item.record_type === "single",
-          );
-
-          setAlbums(studioAlbums);
-          setEpsAndSingles(otherReleases);
-        }
+        const details = await fetchArtistDetailsFromMusicBrainz(id);
+        setArtistName(details.name);
+        setArtistBanner(details.bannerUrl);
+        setAlbums(details.albums);
+        setEpsAndSingles(details.epsAndSingles);
       } catch (error) {
-        console.error("Erro ao carregar detalhes do artista no Deezer:", error);
+        console.error(
+          "Erro ao carregar detalhes do artista no MusicBrainz:",
+          error
+        );
       } finally {
         setIsLoading(false);
       }
     }
 
-    if (id) {
-      fetchArtistDetails();
-    }
+    fetchArtistDetails();
   }, [id]);
 
   if (isLoading) {
@@ -123,19 +89,20 @@ export function ArtistDetail() {
               {artistName || "Detalhes do Artista"}
             </h1>
             <p className="text-muted-foreground mt-2 text-sm md:text-base font-medium">
-              Discografia, álbuns e lançamentos oficiais
+              Discografia completa via MusicBrainz & Cover Art Archive: álbuns,
+              EPs e singles oficiais
             </p>
           </div>
         </div>
       </div>
 
       <div className="artist-main-content">
-
         {/* Seção de Álbuns */}
         {albums.length > 0 && (
           <div className="mt-12">
             <h2 className="section-title">
-              <Disc className="h-6 w-6 text-primary" /> Álbuns de Estúdio
+              <Disc className="h-6 w-6 text-primary" /> Álbuns de Estúdio (
+              {albums.length})
             </h2>
 
             <div className="releases-grid">
@@ -154,6 +121,7 @@ export function ArtistDetail() {
                           <img
                             src={coverUrl}
                             alt={album.title}
+                            onError={handleCoverImageError}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
@@ -192,7 +160,8 @@ export function ArtistDetail() {
         {epsAndSingles.length > 0 && (
           <div className="mt-12">
             <h2 className="section-title">
-              <Radio className="h-6 w-6 text-primary" /> EPs e Singles
+              <Radio className="h-6 w-6 text-primary" /> EPs e Singles (
+              {epsAndSingles.length})
             </h2>
 
             <div className="releases-grid">
@@ -211,6 +180,7 @@ export function ArtistDetail() {
                           <img
                             src={coverUrl}
                             alt={item.title}
+                            onError={handleCoverImageError}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
