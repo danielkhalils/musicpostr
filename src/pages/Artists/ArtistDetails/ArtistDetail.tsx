@@ -10,81 +10,76 @@ import {
 } from "lucide-react";
 import "./ArtistDetail.css";
 import { Button } from "../../../components/ui/button";
-
-interface DeezerAlbum {
-  id: number;
-  title: string;
-  cover_medium?: string;
-  cover_big?: string;
-  release_date?: string;
-  record_type?: string;
-}
+import {
+  type CatalogAlbum,
+  getInstantArtistPreview,
+  fetchArtistDetailsFromMusicBrainz,
+} from "../../../services/musicBrainz.service";
+import { handleCoverImageError } from "../../../services/coverArt.service";
 
 export function ArtistDetail() {
   const { id } = useParams<{ id: string }>();
-  const [artistName, setArtistName] = useState("");
-  const [artistBanner, setArtistBanner] = useState("");
-  const [albums, setAlbums] = useState<DeezerAlbum[]>([]);
-  const [epsAndSingles, setEpsAndSingles] = useState<DeezerAlbum[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const initialPreview = id ? getInstantArtistPreview(id) : null;
+
+  const [artistName, setArtistName] = useState(initialPreview?.name || "");
+  const [artistBanner, setArtistBanner] = useState(
+    initialPreview?.bannerUrl || ""
+  );
+  const [albums, setAlbums] = useState<CatalogAlbum[]>(
+    initialPreview?.albums || []
+  );
+  const [epsAndSingles, setEpsAndSingles] = useState<CatalogAlbum[]>(
+    initialPreview?.epsAndSingles || []
+  );
+  const [isLoading, setIsLoading] = useState(!initialPreview);
+  const [isSyncingDiscography, setIsSyncingDiscography] = useState(false);
 
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(10);
   const [visibleEpsCount, setVisibleEpsCount] = useState(10);
 
   useEffect(() => {
-    async function fetchArtistDetails() {
+    let isMounted = true;
+    if (!id) return;
+
+    setVisibleAlbumsCount(10);
+    setVisibleEpsCount(10);
+
+    const preview = getInstantArtistPreview(id);
+    if (preview) {
+      setArtistName(preview.name);
+      setArtistBanner(preview.bannerUrl);
+      setAlbums(preview.albums);
+      setEpsAndSingles(preview.epsAndSingles);
+      setIsLoading(false);
+      setIsSyncingDiscography(true);
+    } else {
       setIsLoading(true);
-      setVisibleAlbumsCount(10);
-      setVisibleEpsCount(10);
+    }
 
-      try {
-        const artistRes = await fetch(`/api/deezer/artist/${id}`);
-        const artistData = await artistRes.json();
-
-        if (artistData && artistData.name) {
-          setArtistName(artistData.name);
-          setArtistBanner(
-            artistData.picture_xl ||
-              artistData.picture_big ||
-              artistData.picture_medium ||
-              "",
-          );
-        }
-
-        const albumsRes = await fetch(
-          `/api/deezer/artist/${id}/albums?limit=100`,
+    fetchArtistDetailsFromMusicBrainz(id)
+      .then((details) => {
+        if (!isMounted) return;
+        setArtistName(details.name);
+        setArtistBanner(details.bannerUrl);
+        setAlbums(details.albums);
+        setEpsAndSingles(details.epsAndSingles);
+      })
+      .catch((error) => {
+        console.error(
+          "Erro ao carregar detalhes do artista no MusicBrainz:",
+          error
         );
-        const albumsData = await albumsRes.json();
-
-        if (albumsData && albumsData.data) {
-          const uniqueReleases = Array.from(
-            new Map(
-              albumsData.data.map((item: any) => [item.title, item]),
-            ).values(),
-          ) as DeezerAlbum[];
-
-          const studioAlbums = uniqueReleases.filter(
-            (item) => !item.record_type || item.record_type === "album",
-          );
-
-          const otherReleases = uniqueReleases.filter(
-            (item) =>
-              item.record_type === "ep" || item.record_type === "single",
-          );
-
-          setAlbums(studioAlbums);
-          setEpsAndSingles(otherReleases);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+          setIsSyncingDiscography(false);
         }
-      } catch (error) {
-        console.error("Erro ao carregar detalhes do artista no Deezer:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+      });
 
-    if (id) {
-      fetchArtistDetails();
-    }
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   if (isLoading) {
@@ -122,20 +117,24 @@ export function ArtistDetail() {
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight text-foreground drop-shadow-xs break-words">
               {artistName || "Detalhes do Artista"}
             </h1>
-            <p className="text-muted-foreground mt-2 text-sm md:text-base font-medium">
-              Discografia, álbuns e lançamentos oficiais
+            <p className="text-muted-foreground mt-2 text-sm md:text-base font-medium flex items-center gap-2">
+              Discografia completa via MusicBrainz & Cover Art Archive: álbuns,
+              EPs e singles oficiais
+              {isSyncingDiscography && (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary inline" />
+              )}
             </p>
           </div>
         </div>
       </div>
 
       <div className="artist-main-content">
-
         {/* Seção de Álbuns */}
         {albums.length > 0 && (
           <div className="mt-12">
             <h2 className="section-title">
-              <Disc className="h-6 w-6 text-primary" /> Álbuns de Estúdio
+              <Disc className="h-6 w-6 text-primary" /> Álbuns de Estúdio (
+              {albums.length})
             </h2>
 
             <div className="releases-grid">
@@ -154,6 +153,9 @@ export function ArtistDetail() {
                           <img
                             src={coverUrl}
                             alt={album.title}
+                            loading="lazy"
+                            decoding="async"
+                            onError={handleCoverImageError}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
@@ -192,7 +194,8 @@ export function ArtistDetail() {
         {epsAndSingles.length > 0 && (
           <div className="mt-12">
             <h2 className="section-title">
-              <Radio className="h-6 w-6 text-primary" /> EPs e Singles
+              <Radio className="h-6 w-6 text-primary" /> EPs e Singles (
+              {epsAndSingles.length})
             </h2>
 
             <div className="releases-grid">
@@ -211,6 +214,9 @@ export function ArtistDetail() {
                           <img
                             src={coverUrl}
                             alt={item.title}
+                            loading="lazy"
+                            decoding="async"
+                            onError={handleCoverImageError}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
