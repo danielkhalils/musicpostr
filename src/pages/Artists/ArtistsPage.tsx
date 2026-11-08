@@ -11,19 +11,23 @@ import {
 import { Button } from "../../components/ui/button";
 import {
   type CatalogArtist,
+  FEATURED_ARTISTS,
   searchArtistsInMusicBrainz,
 } from "../../services/musicBrainz.service";
 import { handleCoverImageError } from "../../services/coverArt.service";
 import "./ArtistsPage.css";
 
 export function ArtistsPage() {
-  const [artists, setArtists] = useState<CatalogArtist[]>([]);
+  const ITEMS_PER_PAGE = 18;
+
+  const [artists, setArtists] = useState<CatalogArtist[]>(() =>
+    FEATURED_ARTISTS.slice(0, ITEMS_PER_PAGE)
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  // Estado para armazenar os IDs dos artistas seguidos (Ídolos) sincronizados com o localStorage
   const [followedIds, setFollowedIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem("musicpostr_idols");
@@ -33,13 +37,10 @@ export function ArtistsPage() {
     }
   });
 
-  const ITEMS_PER_PAGE = 18;
-
   useEffect(() => {
     setPage(1);
   }, [searchQuery]);
 
-  // Salvar ídolos no localStorage sempre que houver alteração
   useEffect(() => {
     try {
       localStorage.setItem("musicpostr_idols", JSON.stringify(followedIds));
@@ -71,30 +72,57 @@ export function ArtistsPage() {
   };
 
   useEffect(() => {
-    async function fetchMusicBrainzArtists() {
-      setIsLoading(true);
-      try {
-        const offset = (page - 1) * ITEMS_PER_PAGE;
-        const { artists: fetchedArtists, total } =
-          await searchArtistsInMusicBrainz(searchQuery, ITEMS_PER_PAGE, offset);
+    let isMounted = true;
+    const trimmed = searchQuery.trim();
+    const offset = (page - 1) * ITEMS_PER_PAGE;
 
-        setArtists(fetchedArtists);
-        setHasMore(
-          offset + fetchedArtists.length < total &&
-            fetchedArtists.length >= ITEMS_PER_PAGE
-        );
-      } catch (error) {
-        console.error("Erro ao buscar artistas no MusicBrainz:", error);
-      } finally {
-        setIsLoading(false);
+    // 1. Sem busca na página 1: renderiza instantaneamente (0ms)
+    if (!trimmed && page === 1) {
+      setArtists(FEATURED_ARTISTS.slice(0, ITEMS_PER_PAGE));
+      setHasMore(true);
+      setIsLoading(false);
+      return;
+    }
+
+    // 2. Ao digitar: mostra imediatamente os artistas em memória que batem com o texto
+    if (trimmed && page === 1) {
+      const instantMatches = FEATURED_ARTISTS.filter((a) =>
+        a.name.toLowerCase().includes(trimmed.toLowerCase())
+      );
+      if (instantMatches.length > 0) {
+        setArtists(instantMatches);
       }
     }
 
-    const timeoutId = setTimeout(() => {
-      fetchMusicBrainzArtists();
-    }, 350);
+    const timeoutId = setTimeout(
+      async () => {
+        if (!trimmed || FEATURED_ARTISTS.filter((a) => a.name.toLowerCase().includes(trimmed.toLowerCase())).length === 0) {
+          setIsLoading(true);
+        }
+        try {
+          const { artists: fetchedArtists, total } =
+            await searchArtistsInMusicBrainz(searchQuery, ITEMS_PER_PAGE, offset);
+          if (!isMounted) return;
+          setArtists(fetchedArtists);
+          setHasMore(
+            offset + fetchedArtists.length < total &&
+              fetchedArtists.length >= ITEMS_PER_PAGE
+          );
+        } catch (error) {
+          console.error("Erro ao buscar artistas no MusicBrainz:", error);
+        } finally {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        }
+      },
+      trimmed ? 250 : 0
+    );
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
   }, [searchQuery, page]);
 
   return (
@@ -146,6 +174,8 @@ export function ArtistsPage() {
                         <img
                           src={artist.imageUrl}
                           alt={artist.name}
+                          loading="lazy"
+                          decoding="async"
                           onError={handleCoverImageError}
                           className="w-full h-full object-cover"
                         />
@@ -163,7 +193,6 @@ export function ArtistsPage() {
                     </span>
                   </Link>
 
-                  {/* Botão de Seguir / Ídolo */}
                   <div className="mt-2.5">
                     <Button
                       size="sm"

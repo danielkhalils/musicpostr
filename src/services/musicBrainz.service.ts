@@ -12,10 +12,11 @@ const STORAGE_KEYS = {
   MY_REVIEWS: 'musicpostr_my_reviews_v2',
   FAVORITES: 'musicpostr_favorites_v2',
   FEED: 'musicpostr_community_feed_v2',
-  API_CACHE_PREFIX: 'musicpostr_mb_cache_v2_',
+  API_CACHE_PREFIX: 'musicpostr_mb_cache_v3_',
+  NEW_RELEASES_CACHE: 'musicpostr_new_releases_v2',
 };
 
-const API_CACHE_TTL = 1000 * 60 * 60 * 6; // 6 horas
+const API_CACHE_TTL = 1000 * 60 * 60 * 12; // 12 horas
 
 export interface CatalogTrack {
   id: string;
@@ -117,6 +118,81 @@ export interface MyReviewRecord {
   date: string;
 }
 
+// Tracklists pré-carregadas para abertura instantânea (0ms) dos álbuns em destaque
+const BUILTIN_ALBUM_TRACKS: Record<
+  string,
+  { id: string; title: string; duration: number }[]
+> = {
+  '02a544b3-0459-42c7-bd9c-047162e7b67a': [
+    { id: 'hmhas-1', title: 'SKINNY', duration: 219 },
+    { id: 'hmhas-2', title: 'LUNCH', duration: 179 },
+    { id: 'hmhas-3', title: 'CHIHIRO', duration: 303 },
+    { id: 'hmhas-4', title: 'BIRDS OF A FEATHER', duration: 210 },
+    { id: 'hmhas-5', title: 'WILDFLOWER', duration: 261 },
+    { id: 'hmhas-6', title: 'THE GREATEST', duration: 293 },
+    { id: 'hmhas-7', title: 'L’AMOUR DE MA VIE', duration: 333 },
+    { id: 'hmhas-8', title: 'THE DINER', duration: 186 },
+    { id: 'hmhas-9', title: 'BITTERSUITE', duration: 298 },
+    { id: 'hmhas-10', title: 'BLUE', duration: 343 },
+  ],
+  'e0fdb431-0109-420d-8a37-f99eaeb4d671': [
+    { id: 'brat-1', title: '360', duration: 133 },
+    { id: 'brat-2', title: 'Club classics', duration: 153 },
+    { id: 'brat-3', title: 'Sympathy is a knife', duration: 151 },
+    { id: 'brat-4', title: 'I might say something stupid', duration: 109 },
+    { id: 'brat-5', title: 'Talk talk', duration: 161 },
+    { id: 'brat-6', title: 'Von dutch', duration: 164 },
+    { id: 'brat-7', title: 'Everything is romantic', duration: 203 },
+    { id: 'brat-8', title: 'Rewind', duration: 168 },
+    { id: 'brat-9', title: 'Apple', duration: 151 },
+    { id: 'brat-10', title: '365', duration: 203 },
+  ],
+  '32cb822c-a14e-49ce-a169-f209c5f31e0f': [
+    { id: 'gnx-1', title: 'wacced out murals', duration: 317 },
+    { id: 'gnx-2', title: 'squabble up', duration: 157 },
+    { id: 'gnx-3', title: 'luther', duration: 177 },
+    { id: 'gnx-4', title: 'man at the garden', duration: 233 },
+    { id: 'gnx-5', title: 'hey now', duration: 217 },
+    { id: 'gnx-6', title: 'reincarnated', duration: 275 },
+    { id: 'gnx-7', title: 'tv off', duration: 220 },
+    { id: 'gnx-8', title: 'dodger blue', duration: 131 },
+    { id: 'gnx-9', title: 'heart pt. 6', duration: 292 },
+    { id: 'gnx-10', title: 'gloria', duration: 287 },
+  ],
+  '78570bea-2a26-467c-a3db-c52723ceb394': [
+    { id: 'ah-1', title: 'Alone Again', duration: 250 },
+    { id: 'ah-2', title: 'Too Late', duration: 239 },
+    { id: 'ah-3', title: 'Hardest to Love', duration: 211 },
+    { id: 'ah-4', title: 'Heartless', duration: 198 },
+    { id: 'ah-5', title: 'Faith', duration: 283 },
+    { id: 'ah-6', title: 'Blinding Lights', duration: 200 },
+    { id: 'ah-7', title: 'In Your Eyes', duration: 237 },
+    { id: 'ah-8', title: 'Save Your Tears', duration: 215 },
+    { id: 'ah-9', title: 'After Hours', duration: 361 },
+  ],
+  'aa997ea0-2936-40bd-884d-3af8a0e064dc': [
+    { id: 'ram-1', title: 'Give Life Back to Music', duration: 275 },
+    { id: 'ram-2', title: 'The Game of Love', duration: 322 },
+    { id: 'ram-3', title: 'Giorgio by Moroder', duration: 544 },
+    { id: 'ram-4', title: 'Instant Crush', duration: 337 },
+    { id: 'ram-5', title: 'Lose Yourself to Dance', duration: 353 },
+    { id: 'ram-6', title: 'Touch', duration: 498 },
+    { id: 'ram-7', title: 'Get Lucky', duration: 369 },
+    { id: 'ram-8', title: 'Contact', duration: 381 },
+  ],
+  'f5093c06-23e3-404f-aeaa-40f72885ee3a': [
+    { id: 'dsotm-1', title: 'Speak to Me / Breathe', duration: 238 },
+    { id: 'dsotm-2', title: 'On the Run', duration: 216 },
+    { id: 'dsotm-3', title: 'Time', duration: 413 },
+    { id: 'dsotm-4', title: 'The Great Gig in the Sky', duration: 283 },
+    { id: 'dsotm-5', title: 'Money', duration: 382 },
+    { id: 'dsotm-6', title: 'Us and Them', duration: 469 },
+    { id: 'dsotm-7', title: 'Any Colour You Like', duration: 206 },
+    { id: 'dsotm-8', title: 'Brain Damage', duration: 226 },
+    { id: 'dsotm-9', title: 'Eclipse', duration: 123 },
+  ],
+};
+
 function makeAlbumSeed(
   id: string,
   title: string,
@@ -158,6 +234,8 @@ function makeAlbumSeed(
     },
   ];
 
+  const builtinTracks = BUILTIN_ALBUM_TRACKS[id];
+
   return {
     id,
     title,
@@ -176,6 +254,7 @@ function makeAlbumSeed(
     totalReviews,
     listenersCount,
     reviews: defaultReviews,
+    ...(builtinTracks ? { tracks: { data: builtinTracks } } : {}),
   };
 }
 
@@ -411,6 +490,30 @@ const INITIAL_INTERNAL_ALBUMS: CatalogAlbum[] = [
     8.8,
     126,
     2540
+  ),
+  makeAlbumSeed(
+    'fa566e7b-254a-4fab-8aa5-ebcb7592d7f2',
+    'COWBOY CARTER',
+    '859d0860-d480-4efd-970c-c05d5f1776b8',
+    'Beyoncé',
+    '2024-03-29',
+    'Pop',
+    'Parkwood / Columbia',
+    9.1,
+    134,
+    2690
+  ),
+  makeAlbumSeed(
+    '9d4e5829-e0a6-44f2-98c4-fe51234b1ba5',
+    'The Tortured Poets Department',
+    '20244d07-534f-4eff-b4d4-930878889970',
+    'Taylor Swift',
+    '2024-04-19',
+    'Pop',
+    'Republic Records',
+    8.7,
+    145,
+    2810
   ),
   makeAlbumSeed(
     '155bd1f1-0570-41f3-a38c-0dd81373a5b6',
@@ -783,34 +886,58 @@ export const INITIAL_TOP_TRACKS: CatalogTrack[] = [
 ];
 
 // ============================================================================
-// GERENCIAMENTO INTERNO DE AVALIAÇÕES, OUVINTES E FAVORITOS (LOCALSTORAGE)
+// CACHE EM MEMÓRIA (ZERO LATÊNCIA / SEM PARSE REPETIDO DE LOCALSTORAGE)
 // ============================================================================
 
+let memoryAlbumsStore: CatalogAlbum[] | null = null;
+const discoveredAlbumsMemory = new Map<string, CatalogAlbum>();
+const discoveredArtistsMemory = new Map<string, CatalogArtist>();
+const memoryApiCache = new Map<string, any>();
+const inflightRequests = new Map<string, Promise<any>>();
+
 export function getInternalAlbumsStore(): CatalogAlbum[] {
+  if (memoryAlbumsStore) {
+    return memoryAlbumsStore;
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.ALBUM_STATS);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEYS.ALBUM_STATS, JSON.stringify(INITIAL_INTERNAL_ALBUMS));
-      return [...INITIAL_INTERNAL_ALBUMS];
+      memoryAlbumsStore = [...INITIAL_INTERNAL_ALBUMS];
+      localStorage.setItem(
+        STORAGE_KEYS.ALBUM_STATS,
+        JSON.stringify(memoryAlbumsStore)
+      );
+      return memoryAlbumsStore;
     }
     const parsed = JSON.parse(raw) as CatalogAlbum[];
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem(STORAGE_KEYS.ALBUM_STATS, JSON.stringify(INITIAL_INTERNAL_ALBUMS));
-      return [...INITIAL_INTERNAL_ALBUMS];
+      memoryAlbumsStore = [...INITIAL_INTERNAL_ALBUMS];
+      localStorage.setItem(
+        STORAGE_KEYS.ALBUM_STATS,
+        JSON.stringify(memoryAlbumsStore)
+      );
+      return memoryAlbumsStore;
     }
-    return parsed;
+    memoryAlbumsStore = parsed;
+    return memoryAlbumsStore;
   } catch {
-    return [...INITIAL_INTERNAL_ALBUMS];
+    memoryAlbumsStore = [...INITIAL_INTERNAL_ALBUMS];
+    return memoryAlbumsStore;
   }
 }
 
 function saveInternalAlbumsStore(albums: CatalogAlbum[]): void {
+  memoryAlbumsStore = [...albums];
   try {
     localStorage.setItem(STORAGE_KEYS.ALBUM_STATS, JSON.stringify(albums));
     window.dispatchEvent(new CustomEvent('musicpostr:albums-updated'));
   } catch {
     // ignore storage errors
   }
+}
+
+export function registerDiscoveredAlbum(album: CatalogAlbum): void {
+  discoveredAlbumsMemory.set(album.id, album);
 }
 
 /**
@@ -820,9 +947,10 @@ function saveInternalAlbumsStore(albums: CatalogAlbum[]): void {
 export function getPopularAlbumsByInternalActivity(limit = 8): CatalogAlbum[] {
   const store = getInternalAlbumsStore();
   const sorted = [...store].sort((a, b) => {
-    // Score composto pela quantidade de usuários que ouviram + volume de avaliações internas + nota média
-    const scoreA = a.listenersCount * 1.0 + a.totalReviews * 6 + a.communityRating * 25;
-    const scoreB = b.listenersCount * 1.0 + b.totalReviews * 6 + b.communityRating * 25;
+    const scoreA =
+      a.listenersCount * 1.0 + a.totalReviews * 6 + a.communityRating * 25;
+    const scoreB =
+      b.listenersCount * 1.0 + b.totalReviews * 6 + b.communityRating * 25;
     return scoreB - scoreA;
   });
   return sorted.slice(0, limit);
@@ -855,6 +983,26 @@ export function getHighlightAlbums(limit = 10): CatalogAlbum[] {
   return sorted.slice(0, limit);
 }
 
+/**
+ * Retorna os "Novos Lançamentos" em cache imediatamente (0ms) para evitar loading na Home e Rankings.
+ */
+export function getInitialNewReleases(limit = 8): CatalogAlbum[] {
+  try {
+    const cached = localStorage.getItem(STORAGE_KEYS.NEW_RELEASES_CACHE);
+    if (cached) {
+      const parsed = JSON.parse(cached) as CatalogAlbum[];
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.slice(0, limit);
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return [...getInternalAlbumsStore()]
+    .sort((a, b) => b.release_date.localeCompare(a.release_date))
+    .slice(0, limit);
+}
+
 export function getAlbumInternalData(
   albumId: string,
   fallbackMeta?: Partial<CatalogAlbum>
@@ -863,7 +1011,9 @@ export function getAlbumInternalData(
   const existing = store.find((a) => a.id === albumId);
   if (existing) return existing;
 
-  // Gera dados iniciais determinísticos caso seja um álbum recém-buscado no MusicBrainz
+  const discovered = discoveredAlbumsMemory.get(albumId);
+  if (discovered && !fallbackMeta) return discovered;
+
   let hash = 0;
   for (let i = 0; i < albumId.length; i++) {
     hash = (hash * 31 + albumId.charCodeAt(i)) >>> 0;
@@ -871,18 +1021,31 @@ export function getAlbumInternalData(
   const initialRating = Number((7.8 + (hash % 20) / 10).toFixed(1));
   const initialReviewsCount = 5 + (hash % 25);
   const initialListeners = 45 + (hash % 350);
+  const builtinTracks = BUILTIN_ALBUM_TRACKS[albumId];
 
-  return {
+  const created: CatalogAlbum = {
     id: albumId,
-    title: fallbackMeta?.title || 'Álbum',
-    cover_xl: fallbackMeta?.cover_xl || getReleaseGroupCoverUrl(albumId, '1200'),
-    cover_big: fallbackMeta?.cover_big || getReleaseGroupCoverUrl(albumId, '500'),
-    cover_medium: fallbackMeta?.cover_medium || getReleaseGroupCoverUrl(albumId, '500'),
-    release_date: fallbackMeta?.release_date || '2025',
-    record_type: fallbackMeta?.record_type || 'album',
-    genreName: fallbackMeta?.genreName || 'Pop',
-    label: fallbackMeta?.label || 'Independente',
-    artist: fallbackMeta?.artist || { id: '', name: 'Artista' },
+    title: fallbackMeta?.title || discovered?.title || 'Álbum',
+    cover_xl:
+      fallbackMeta?.cover_xl ||
+      discovered?.cover_xl ||
+      getReleaseGroupCoverUrl(albumId, '1200'),
+    cover_big:
+      fallbackMeta?.cover_big ||
+      discovered?.cover_big ||
+      getReleaseGroupCoverUrl(albumId, '500'),
+    cover_medium:
+      fallbackMeta?.cover_medium ||
+      discovered?.cover_medium ||
+      getReleaseGroupCoverUrl(albumId, '500'),
+    release_date:
+      fallbackMeta?.release_date || discovered?.release_date || '2025',
+    record_type:
+      fallbackMeta?.record_type || discovered?.record_type || 'album',
+    genreName: fallbackMeta?.genreName || discovered?.genreName || 'Pop',
+    label: fallbackMeta?.label || discovered?.label || 'Independente',
+    artist: fallbackMeta?.artist ||
+      discovered?.artist || { id: '', name: 'Artista' },
     communityRating: initialRating > 9.8 ? 9.6 : initialRating,
     totalReviews: initialReviewsCount,
     listenersCount: initialListeners,
@@ -892,16 +1055,93 @@ export function getAlbumInternalData(
       {
         id: `${albumId}-1`,
         user: 'AnaBeat',
-        comment: 'Excelente descoberta no catálogo! Produção e timbres muito bem trabalhados.',
+        comment:
+          'Excelente descoberta no catálogo! Produção e timbres muito bem trabalhados.',
         rating: Math.min(10, Math.round(initialRating)),
       },
       {
         id: `${albumId}-2`,
         user: 'LucasVibes',
-        comment: 'Gostei bastante da atmosfera das faixas, vale muito a audição completa.',
+        comment:
+          'Gostei bastante da atmosfera das faixas, vale muito a audição completa.',
         rating: Math.max(7, Math.min(10, Math.round(initialRating - 0.5))),
       },
     ],
+    ...(builtinTracks
+      ? { tracks: { data: builtinTracks } }
+      : discovered?.tracks
+        ? { tracks: discovered.tracks }
+        : {}),
+  };
+
+  discoveredAlbumsMemory.set(albumId, created);
+  return created;
+}
+
+/**
+ * Retorna instantaneamente (0ms) o preview de um álbum se ele já estiver em memória/catálogo.
+ */
+export function getInstantAlbumPreview(albumId: string): CatalogAlbum | null {
+  const store = getInternalAlbumsStore();
+  const inStore = store.find((a) => a.id === albumId);
+  if (inStore) {
+    const builtinTracks = BUILTIN_ALBUM_TRACKS[albumId];
+    return {
+      ...inStore,
+      isFavorite: isAlbumFavorited(albumId),
+      tracks:
+        inStore.tracks && inStore.tracks.data.length > 0
+          ? inStore.tracks
+          : builtinTracks
+            ? { data: builtinTracks }
+            : undefined,
+    };
+  }
+  const inDiscovered = discoveredAlbumsMemory.get(albumId);
+  if (inDiscovered) {
+    return {
+      ...inDiscovered,
+      isFavorite: isAlbumFavorited(albumId),
+    };
+  }
+  return null;
+}
+
+/**
+ * Retorna instantaneamente (0ms) o preview de um artista e seus álbuns conhecidos.
+ */
+export function getInstantArtistPreview(artistId: string): {
+  id: string;
+  name: string;
+  bannerUrl: string;
+  albums: CatalogAlbum[];
+  epsAndSingles: CatalogAlbum[];
+} | null {
+  const known =
+    FEATURED_ARTISTS.find((a) => a.id === artistId) ||
+    discoveredArtistsMemory.get(artistId);
+
+  const matchingAlbums = getInternalAlbumsStore().filter(
+    (a) =>
+      a.artist.id === artistId ||
+      (known && a.artist.name.toLowerCase() === known.name.toLowerCase())
+  );
+
+  if (!known && matchingAlbums.length === 0) {
+    return null;
+  }
+
+  return {
+    id: artistId,
+    name: known?.name || matchingAlbums[0]?.artist.name || 'Artista',
+    bannerUrl:
+      known?.imageUrl ||
+      matchingAlbums[0]?.cover_xl ||
+      DEFAULT_ARTIST_IMAGE,
+    albums: matchingAlbums.filter((a) => a.record_type === 'album'),
+    epsAndSingles: matchingAlbums.filter(
+      (a) => a.record_type === 'ep' || a.record_type === 'single'
+    ),
   };
 }
 
@@ -909,7 +1149,7 @@ export function getAlbumInternalData(
  * Registra ou alterna que o usuário atual ouviu o álbum, atualizando o contador interno de ouvintes.
  */
 export function toggleAlbumListened(album: CatalogAlbum): CatalogAlbum {
-  const store = getInternalAlbumsStore();
+  const store = [...getInternalAlbumsStore()];
   const idx = store.findIndex((a) => a.id === album.id);
   const base = idx >= 0 ? store[idx] : getAlbumInternalData(album.id, album);
 
@@ -926,6 +1166,7 @@ export function toggleAlbumListened(album: CatalogAlbum): CatalogAlbum {
   } else {
     store.unshift(updated);
   }
+  discoveredAlbumsMemory.set(updated.id, updated);
   saveInternalAlbumsStore(store);
   return updated;
 }
@@ -940,7 +1181,7 @@ export function submitInternalAlbumReview(
   comment: string,
   userName = 'Ana Beatriz'
 ): CatalogAlbum {
-  const store = getInternalAlbumsStore();
+  const store = [...getInternalAlbumsStore()];
   const idx = store.findIndex((a) => a.id === album.id);
   const base = idx >= 0 ? store[idx] : getAlbumInternalData(album.id, album);
 
@@ -970,7 +1211,9 @@ export function submitInternalAlbumReview(
     ...album,
     communityRating: Math.min(10, newAverage),
     totalReviews: newTotal,
-    listenersCount: wasAlreadyListened ? base.listenersCount : base.listenersCount + 1,
+    listenersCount: wasAlreadyListened
+      ? base.listenersCount
+      : base.listenersCount + 1,
     listenedByMe: true,
     reviews: [newReview, ...existingReviews],
   };
@@ -980,9 +1223,9 @@ export function submitInternalAlbumReview(
   } else {
     store.unshift(updated);
   }
+  discoveredAlbumsMemory.set(updated.id, updated);
   saveInternalAlbumsStore(store);
 
-  // Salva também em "Minhas Avaliações"
   addMyReview({
     id: String(newReview.id),
     albumId: updated.id,
@@ -998,7 +1241,6 @@ export function submitInternalAlbumReview(
     }),
   });
 
-  // Adiciona ao Feed da Comunidade
   addCommunityFeedPost({
     id: `feed-${Date.now()}`,
     friendName: userName,
@@ -1230,10 +1472,13 @@ export function addCommunityFeedPost(post: FeedPostItem): void {
 }
 
 // ============================================================================
-// INTEGRAÇÃO COM A API DO MUSICBRAINZ + CACHE INTELIGENTE
+// INTEGRAÇÃO COM A API DO MUSICBRAINZ + DEDUPLICAÇÃO E CACHE EM MEMÓRIA
 // ============================================================================
 
 function readApiCache<T>(key: string): T | null {
+  if (memoryApiCache.has(key)) {
+    return memoryApiCache.get(key) as T;
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.API_CACHE_PREFIX + key);
     if (!raw) return null;
@@ -1242,6 +1487,7 @@ function readApiCache<T>(key: string): T | null {
       localStorage.removeItem(STORAGE_KEYS.API_CACHE_PREFIX + key);
       return null;
     }
+    memoryApiCache.set(key, parsed.data);
     return parsed.data;
   } catch {
     return null;
@@ -1249,6 +1495,7 @@ function readApiCache<T>(key: string): T | null {
 }
 
 function writeApiCache<T>(key: string, data: T): void {
+  memoryApiCache.set(key, data);
   try {
     localStorage.setItem(
       STORAGE_KEYS.API_CACHE_PREFIX + key,
@@ -1260,25 +1507,38 @@ function writeApiCache<T>(key: string, data: T): void {
 }
 
 async function mbFetchJson(pathAndQuery: string): Promise<any | null> {
-  const cacheKey = pathAndQuery;
-  const cached = readApiCache<any>(cacheKey);
+  const cached = readApiCache<any>(pathAndQuery);
   if (cached) return cached;
 
-  try {
-    const res = await fetch(`${MB_API_BASE}/${pathAndQuery}`, {
-      headers: {
-        Accept: 'application/json',
-      },
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data && !data.unavailable && !data.error) {
-      writeApiCache(cacheKey, data);
+  const existingPromise = inflightRequests.get(pathAndQuery);
+  if (existingPromise) return existingPromise;
+
+  const requestPromise = (async () => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6500);
+      const res = await fetch(`${MB_API_BASE}/${pathAndQuery}`, {
+        headers: {
+          Accept: 'application/json',
+        },
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data && !data.unavailable && !data.error) {
+        writeApiCache(pathAndQuery, data);
+      }
+      return data;
+    } catch {
+      return null;
+    } finally {
+      inflightRequests.delete(pathAndQuery);
     }
-    return data;
-  } catch {
-    return null;
-  }
+  })();
+
+  inflightRequests.set(pathAndQuery, requestPromise);
+  return requestPromise;
 }
 
 const GENRE_KEYWORDS: { [genre: string]: string[] } = {
@@ -1304,7 +1564,10 @@ function mapTagsToGenre(tags?: { name: string }[], fallbackIndex = 0): string {
   return genres[fallbackIndex % genres.length];
 }
 
-function normalizeRecordType(primaryType?: string, secondaryTypes?: string[]): 'album' | 'ep' | 'single' {
+function normalizeRecordType(
+  primaryType?: string,
+  secondaryTypes?: string[]
+): 'album' | 'ep' | 'single' {
   const pt = (primaryType || '').toLowerCase();
   if (pt === 'ep') return 'ep';
   if (pt === 'single') return 'single';
@@ -1331,7 +1594,10 @@ function formatArtistCredit(artistCredit?: any[]): { id: string; name: string } 
 export function mapReleaseGroupToCatalogAlbum(rg: any, idx = 0): CatalogAlbum {
   const id = rg.id;
   const artist = formatArtistCredit(rg['artist-credit']);
-  const recordType = normalizeRecordType(rg['primary-type'], rg['secondary-types']);
+  const recordType = normalizeRecordType(
+    rg['primary-type'],
+    rg['secondary-types']
+  );
   const genreName = mapTagsToGenre(rg.tags || rg.genres, idx);
   const internalData = getAlbumInternalData(id, {
     title: rg.title,
@@ -1344,39 +1610,44 @@ export function mapReleaseGroupToCatalogAlbum(rg: any, idx = 0): CatalogAlbum {
     cover_medium: getReleaseGroupCoverUrl(id, '500'),
   });
 
-  return {
+  const result: CatalogAlbum = {
     ...internalData,
     id,
     title: rg.title || internalData.title,
-    release_date: rg['first-release-date'] || rg.date || internalData.release_date,
+    release_date:
+      rg['first-release-date'] || rg.date || internalData.release_date,
     record_type: recordType,
     genreName: internalData.genreName || genreName,
-    artist: artist.name !== 'Artista Desconhecido' ? artist : internalData.artist,
+    artist:
+      artist.name !== 'Artista Desconhecido' ? artist : internalData.artist,
     cover_xl: getReleaseGroupCoverUrl(id, '1200'),
     cover_big: getReleaseGroupCoverUrl(id, '500'),
     cover_medium: getReleaseGroupCoverUrl(id, '500'),
   };
+
+  discoveredAlbumsMemory.set(id, result);
+  return result;
 }
 
 /**
  * Busca "Novos Lançamentos" diretamente na API do MusicBrainz (álbuns recentes oficiais)
  * com capas vindas do Cover Art Archive.
  */
-export async function fetchNewReleasesFromMusicBrainz(limit = 12): Promise<CatalogAlbum[]> {
+export async function fetchNewReleasesFromMusicBrainz(
+  limit = 12
+): Promise<CatalogAlbum[]> {
   const currentYear = new Date().getFullYear();
   const minYear = Math.max(2024, currentYear - 2);
 
-  // Busca releases oficiais recentes no MusicBrainz que possuem capa no Cover Art Archive
   const query = `status:official AND primarytype:album AND date:[${minYear}-01-01 TO ${currentYear}-12-31] NOT artist:"Various Artists"`;
   const data = await mbFetchJson(
-    `release?query=${encodeURIComponent(query)}&limit=50&fmt=json`
+    `release?query=${encodeURIComponent(query)}&limit=40&fmt=json`
   );
 
   const results: CatalogAlbum[] = [];
   const seenReleaseGroups = new Set<string>();
 
   if (data && Array.isArray(data.releases) && data.releases.length > 0) {
-    // Prioriza os releases que têm artwork confirmado no Cover Art Archive
     const sortedReleases = [...data.releases].sort((a, b) => {
       const aArt = a['cover-art-archive']?.artwork ? 1 : 0;
       const bArt = b['cover-art-archive']?.artwork ? 1 : 0;
@@ -1418,7 +1689,7 @@ export async function fetchNewReleasesFromMusicBrainz(limit = 12): Promise<Catal
         cover_medium: cover500,
       });
 
-      results.push({
+      const albumItem: CatalogAlbum = {
         ...baseAlbum,
         id: rgId,
         releaseId: rel.id,
@@ -1429,13 +1700,15 @@ export async function fetchNewReleasesFromMusicBrainz(limit = 12): Promise<Catal
         cover_xl: cover1200,
         cover_big: cover500,
         cover_medium: cover500,
-      });
+      };
+
+      discoveredAlbumsMemory.set(rgId, albumItem);
+      results.push(albumItem);
 
       if (results.length >= limit) break;
     }
   }
 
-  // Complementa com lançamentos recentes do catálogo caso a API retorne menos itens
   if (results.length < limit) {
     const recentInternal = getInternalAlbumsStore()
       .filter((a) => !seenReleaseGroups.has(a.id))
@@ -1447,7 +1720,63 @@ export async function fetchNewReleasesFromMusicBrainz(limit = 12): Promise<Catal
     }
   }
 
-  return results.slice(0, limit);
+  const finalSlice = results.slice(0, limit);
+  try {
+    localStorage.setItem(
+      STORAGE_KEYS.NEW_RELEASES_CACHE,
+      JSON.stringify(finalSlice)
+    );
+  } catch {
+    // ignore
+  }
+  return finalSlice;
+}
+
+/**
+ * Busca instantaneamente (0ms) no catálogo em memória por álbuns, artistas e músicas.
+ */
+export function searchLocalCatalogInstant(query: string): {
+  albums: CatalogAlbum[];
+  artists: CatalogArtist[];
+  tracks: CatalogTrack[];
+} {
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    return { albums: [], artists: [], tracks: [] };
+  }
+
+  const allAlbums = [
+    ...getInternalAlbumsStore(),
+    ...Array.from(discoveredAlbumsMemory.values()),
+  ];
+  const uniqueAlbumsMap = new Map<string, CatalogAlbum>();
+  for (const alb of allAlbums) {
+    if (!uniqueAlbumsMap.has(alb.id)) {
+      uniqueAlbumsMap.set(alb.id, alb);
+    }
+  }
+
+  const albums = Array.from(uniqueAlbumsMap.values())
+    .filter(
+      (a) =>
+        a.title.toLowerCase().includes(q) ||
+        a.artist.name.toLowerCase().includes(q)
+    )
+    .slice(0, 5);
+
+  const artists = FEATURED_ARTISTS.filter(
+    (ar) =>
+      ar.name.toLowerCase().includes(q) || ar.genre.toLowerCase().includes(q)
+  ).slice(0, 4);
+
+  const tracks = INITIAL_TOP_TRACKS.filter(
+    (tr) =>
+      tr.title.toLowerCase().includes(q) ||
+      tr.artist.name.toLowerCase().includes(q) ||
+      tr.album.title.toLowerCase().includes(q)
+  ).slice(0, 5);
+
+  return { albums, artists, tracks };
 }
 
 /**
@@ -1477,7 +1806,10 @@ export async function searchAlbumsInMusicBrainz(
         a.title.toLowerCase().includes(trimmed.toLowerCase()) ||
         a.artist.name.toLowerCase().includes(trimmed.toLowerCase())
     );
-    return { albums: filtered.slice(offset, offset + limit), total: filtered.length };
+    return {
+      albums: filtered.slice(offset, offset + limit),
+      total: filtered.length,
+    };
   }
 
   const mapped = data['release-groups'].map((rg: any, idx: number) =>
@@ -1490,9 +1822,6 @@ export async function searchAlbumsInMusicBrainz(
   };
 }
 
-/**
- * Mantém exportação compatível com a versão anterior do serviço.
- */
 export const searchAlbums = async (query: string) => {
   return searchAlbumsInMusicBrainz(query, 10, 0);
 };
@@ -1508,7 +1837,6 @@ export async function searchArtistsInMusicBrainz(
   const trimmed = query.trim();
 
   if (!trimmed) {
-    // Sem termo de busca: retorna artistas em destaque e busca mais no MusicBrainz se paginar
     if (offset < FEATURED_ARTISTS.length) {
       return {
         artists: FEATURED_ARTISTS.slice(offset, offset + limit),
@@ -1549,42 +1877,50 @@ export async function searchArtistsInMusicBrainz(
     return true;
   });
 
-  const formatted: CatalogArtist[] = validArtists.map((artist: any, idx: number) => {
-    const known = FEATURED_ARTISTS.find(
-      (fa) => fa.id === artist.id || fa.name.toLowerCase() === String(artist.name).toLowerCase()
-    );
+  const store = getInternalAlbumsStore();
 
-    const internalArtistAlbum = getInternalAlbumsStore().find(
-      (alb) =>
-        alb.artist.id === artist.id ||
-        alb.artist.name.toLowerCase() === String(artist.name).toLowerCase()
-    );
+  const formatted: CatalogArtist[] = validArtists.map(
+    (artist: any, idx: number) => {
+      const known = FEATURED_ARTISTS.find(
+        (fa) =>
+          fa.id === artist.id ||
+          fa.name.toLowerCase() === String(artist.name).toLowerCase()
+      );
 
-    const genre =
-      known?.genre ||
-      (artist.tags && artist.tags.length > 0
-        ? artist.tags
-            .slice(0, 2)
-            .map((t: any) => t.name)
-            .join(' / ')
-        : artist.disambiguation || 'Artista');
+      const internalArtistAlbum = store.find(
+        (alb) =>
+          alb.artist.id === artist.id ||
+          alb.artist.name.toLowerCase() === String(artist.name).toLowerCase()
+      );
 
-    let hash = 0;
-    const idStr = String(artist.id || idx);
-    for (let i = 0; i < idStr.length; i++) {
-      hash = (hash * 31 + idStr.charCodeAt(i)) >>> 0;
+      const genre =
+        known?.genre ||
+        (artist.tags && artist.tags.length > 0
+          ? artist.tags
+              .slice(0, 2)
+              .map((t: any) => t.name)
+              .join(' / ')
+          : artist.disambiguation || 'Artista');
+
+      let hash = 0;
+      const idStr = String(artist.id || idx);
+      for (let i = 0; i < idStr.length; i++) {
+        hash = (hash * 31 + idStr.charCodeAt(i)) >>> 0;
+      }
+
+      const item: CatalogArtist = {
+        id: artist.id,
+        name: artist.name,
+        imageUrl: known?.imageUrl || internalArtistAlbum?.cover_medium || '',
+        genre,
+        country: artist.country || artist.area?.name || '',
+        nbFans: known?.nbFans || 150 + (hash % 2500),
+        type: artist.type,
+      };
+      discoveredArtistsMemory.set(item.id, item);
+      return item;
     }
-
-    return {
-      id: artist.id,
-      name: artist.name,
-      imageUrl: known?.imageUrl || internalArtistAlbum?.cover_medium || '',
-      genre,
-      country: artist.country || artist.area?.name || '',
-      nbFans: known?.nbFans || 150 + (hash % 2500),
-      type: artist.type,
-    };
-  });
+  );
 
   return {
     artists: formatted,
@@ -1620,7 +1956,8 @@ export async function searchTracksInMusicBrainz(
   for (const rec of data.recordings) {
     const artist = formatArtistCredit(rec['artist-credit']);
     const firstRelease = rec.releases?.[0];
-    const releaseGroupId = firstRelease?.['release-group']?.id || firstRelease?.id || '';
+    const releaseGroupId =
+      firstRelease?.['release-group']?.id || firstRelease?.id || '';
     const albumTitle = firstRelease?.title || 'Single';
 
     tracks.push({
@@ -1645,8 +1982,8 @@ export async function searchTracksInMusicBrainz(
 }
 
 /**
- * Busca detalhes completos de um Artista no MusicBrainz (incluindo Álbuns, EPs e Singles)
- * com capas vindas do Cover Art Archive.
+ * Busca detalhes completos de um Artista no MusicBrainz em UMA ÚNICA REQUISIÇÃO
+ * (`artist/${artistId}?inc=release-groups+tags+genres&fmt=json`), evitando rate-limiting!
  */
 export async function fetchArtistDetailsFromMusicBrainz(artistId: string): Promise<{
   id: string;
@@ -1657,15 +1994,18 @@ export async function fetchArtistDetailsFromMusicBrainz(artistId: string): Promi
   albums: CatalogAlbum[];
   epsAndSingles: CatalogAlbum[];
 }> {
-  const knownArtist = FEATURED_ARTISTS.find((a) => a.id === artistId);
+  const knownArtist =
+    FEATURED_ARTISTS.find((a) => a.id === artistId) ||
+    discoveredArtistsMemory.get(artistId);
 
-  const [artistData, rgData] = await Promise.all([
-    mbFetchJson(`artist/${artistId}?inc=tags+genres&fmt=json`),
-    mbFetchJson(`release-group?artist=${artistId}&type=album|ep|single&limit=100&fmt=json`),
-  ]);
+  // Uma única chamada traz o artista + seus release-groups (álbuns, EPs e singles)
+  const artistData = await mbFetchJson(
+    `artist/${artistId}?inc=release-groups+tags+genres&fmt=json`
+  );
 
   const artistName = artistData?.name || knownArtist?.name || 'Artista';
-  const country = artistData?.country || artistData?.area?.name || knownArtist?.country || '';
+  const country =
+    artistData?.country || artistData?.area?.name || knownArtist?.country || '';
   const genre =
     knownArtist?.genre ||
     (artistData?.tags?.length
@@ -1675,9 +2015,8 @@ export async function fetchArtistDetailsFromMusicBrainz(artistId: string): Promi
           .join(' • ')
       : 'Artista Oficial');
 
-  const releaseGroups: any[] = rgData?.['release-groups'] || [];
+  const releaseGroups: any[] = artistData?.['release-groups'] || [];
 
-  // Remove duplicados por título normalizado e ordena dos mais recentes para os mais antigos
   const uniqueMap = new Map<string, any>();
   for (const rg of releaseGroups) {
     const normTitle = String(rg.title || '').toLowerCase().trim();
@@ -1693,21 +2032,27 @@ export async function fetchArtistDetailsFromMusicBrainz(artistId: string): Promi
   const allReleases = Array.from(uniqueMap.values())
     .map((rg, idx) => {
       const mapped = mapReleaseGroupToCatalogAlbum(rg, idx);
-      return {
+      const withArtist: CatalogAlbum = {
         ...mapped,
         artist: { id: artistId, name: artistName },
       };
+      discoveredAlbumsMemory.set(withArtist.id, withArtist);
+      return withArtist;
     })
-    .sort((a, b) => String(b.release_date || '').localeCompare(String(a.release_date || '')));
-
-  // Se o MusicBrainz estiver indisponível, usa os álbuns internos desse artista
-  if (allReleases.length === 0) {
-    const fallbackInternal = getInternalAlbumsStore().filter(
-      (a) =>
-        a.artist.id === artistId ||
-        a.artist.name.toLowerCase() === artistName.toLowerCase()
+    .sort((a, b) =>
+      String(b.release_date || '').localeCompare(String(a.release_date || ''))
     );
-    allReleases.push(...fallbackInternal);
+
+  // Garante que álbuns internos desse artista também estejam presentes
+  const internalMatching = getInternalAlbumsStore().filter(
+    (a) =>
+      a.artist.id === artistId ||
+      a.artist.name.toLowerCase() === artistName.toLowerCase()
+  );
+  for (const intAlb of internalMatching) {
+    if (!allReleases.some((r) => r.id === intAlb.id)) {
+      allReleases.unshift(intAlb);
+    }
   }
 
   const albums = allReleases.filter((item) => item.record_type === 'album');
@@ -1733,60 +2078,72 @@ export async function fetchArtistDetailsFromMusicBrainz(artistId: string): Promi
 }
 
 /**
- * Busca os detalhes completos de um Álbum, EP ou Single no MusicBrainz (release-group ou release),
- * incluindo a lista completa de músicas (recordings) e capas do Cover Art Archive.
+ * Busca os detalhes completos de um Álbum, EP ou Single no MusicBrainz.
+ * Otimizado para usar 1 única requisição de busca de release (`rgid:${albumId}`) ou
+ * retornar imediatamente se as faixas já estiverem em memória.
  */
 export async function fetchAlbumDetailsFromMusicBrainz(
   albumId: string
 ): Promise<CatalogAlbum | null> {
-  const internalMatch = getInternalAlbumsStore().find((a) => a.id === albumId);
-
-  // 1. Consulta o release-group no MusicBrainz
-  const rgData = await mbFetchJson(
-    `release-group/${albumId}?inc=artist-credits+releases+tags+genres&fmt=json`
-  );
-
-  let releaseGroupId = albumId;
-  let targetReleaseId = internalMatch?.releaseId || '';
-  let title = internalMatch?.title || '';
-  let releaseDate = internalMatch?.release_date || '';
-  let recordType: 'album' | 'ep' | 'single' = internalMatch?.record_type || 'album';
-  let artist = internalMatch?.artist || { id: '', name: 'Artista' };
-  let genreName = internalMatch?.genreName || 'Pop';
-  let label = internalMatch?.label || 'Oficial';
-
-  if (rgData && rgData.id) {
-    releaseGroupId = rgData.id;
-    title = rgData.title || title;
-    releaseDate = rgData['first-release-date'] || releaseDate || '2025';
-    recordType = normalizeRecordType(rgData['primary-type'], rgData['secondary-types']);
-    artist = formatArtistCredit(rgData['artist-credit']);
-    if (rgData.tags?.length || rgData.genres?.length) {
-      genreName = mapTagsToGenre(rgData.tags || rgData.genres);
-    }
-
-    const releasesList: any[] = rgData.releases || [];
-    if (releasesList.length > 0) {
-      const officialRelease =
-        releasesList.find(
-          (r) =>
-            String(r.status || '').toLowerCase() === 'official' &&
-            (r.country === 'US' || r.country === 'XW' || r.country === 'GB' || r.country === 'BR')
-        ) ||
-        releasesList.find((r) => String(r.status || '').toLowerCase() === 'official') ||
-        releasesList[0];
-
-      targetReleaseId = officialRelease.id;
-    }
-  } else {
-    // Caso o ID passado já seja o MBID de um release específico
-    targetReleaseId = albumId;
+  const instant = getInstantAlbumPreview(albumId);
+  if (instant && instant.tracks && instant.tracks.data.length > 0) {
+    return instant;
   }
 
-  // 2. Busca as faixas (recordings) e gravadora do release selecionado no MusicBrainz
-  let tracksList: { id: string; title: string; duration: number }[] = [];
+  let releaseGroupId = albumId;
+  let targetReleaseId = instant?.releaseId || '';
+  let title = instant?.title || '';
+  let releaseDate = instant?.release_date || '';
+  let recordType: 'album' | 'ep' | 'single' = instant?.record_type || 'album';
+  let artist = instant?.artist || { id: '', name: 'Artista' };
+  let genreName = instant?.genreName || 'Pop';
+  let label = instant?.label || 'Oficial';
 
-  if (targetReleaseId) {
+  if (!targetReleaseId) {
+    const rgData = await mbFetchJson(
+      `release-group/${albumId}?inc=artist-credits+releases+tags+genres&fmt=json`
+    );
+
+    if (rgData && rgData.id) {
+      releaseGroupId = rgData.id;
+      title = rgData.title || title;
+      releaseDate = rgData['first-release-date'] || releaseDate || '2025';
+      recordType = normalizeRecordType(
+        rgData['primary-type'],
+        rgData['secondary-types']
+      );
+      artist = formatArtistCredit(rgData['artist-credit']);
+      if (rgData.tags?.length || rgData.genres?.length) {
+        genreName = mapTagsToGenre(rgData.tags || rgData.genres);
+      }
+
+      const releasesList: any[] = rgData.releases || [];
+      if (releasesList.length > 0) {
+        const officialRelease =
+          releasesList.find(
+            (r) =>
+              String(r.status || '').toLowerCase() === 'official' &&
+              (r.country === 'US' ||
+                r.country === 'XW' ||
+                r.country === 'GB' ||
+                r.country === 'BR')
+          ) ||
+          releasesList.find(
+            (r) => String(r.status || '').toLowerCase() === 'official'
+          ) ||
+          releasesList[0];
+
+        targetReleaseId = officialRelease.id;
+      }
+    } else {
+      targetReleaseId = albumId;
+    }
+  }
+
+  let tracksList: { id: string; title: string; duration: number }[] =
+    BUILTIN_ALBUM_TRACKS[releaseGroupId] || [];
+
+  if (targetReleaseId && tracksList.length === 0) {
     const releaseDetails = await mbFetchJson(
       `release/${targetReleaseId}?inc=recordings+artist-credits+release-groups+labels+tags&fmt=json`
     );
@@ -1816,7 +2173,10 @@ export async function fetchAlbumDetailsFromMusicBrainz(
           const durationMs = tr.length ?? tr.recording?.length ?? 0;
           tracksList.push({
             id: tr.recording?.id || tr.id || `${tracksList.length + 1}`,
-            title: tr.title || tr.recording?.title || `Faixa ${tracksList.length + 1}`,
+            title:
+              tr.title ||
+              tr.recording?.title ||
+              `Faixa ${tracksList.length + 1}`,
             duration: durationMs ? Math.round(durationMs / 1000) : 0,
           });
         }
@@ -1824,14 +2184,14 @@ export async function fetchAlbumDetailsFromMusicBrainz(
     }
   }
 
-  // Fallback se não encontrou nem no MusicBrainz nem no store interno
   if (!title) {
     return null;
   }
 
-  // Fallback de faixas das músicas conhecidas caso o release não traga mídia detalhada
   if (tracksList.length === 0) {
-    const matchingTracks = INITIAL_TOP_TRACKS.filter((t) => t.album.id === releaseGroupId);
+    const matchingTracks = INITIAL_TOP_TRACKS.filter(
+      (t) => t.album.id === releaseGroupId
+    );
     if (matchingTracks.length > 0) {
       tracksList = matchingTracks.map((t) => ({
         id: t.id,
@@ -1853,7 +2213,7 @@ export async function fetchAlbumDetailsFromMusicBrainz(
     cover_medium: getReleaseGroupCoverUrl(releaseGroupId, '500'),
   });
 
-  return {
+  const fullAlbum: CatalogAlbum = {
     ...internalStats,
     id: releaseGroupId,
     releaseId: targetReleaseId || internalStats.releaseId,
@@ -1871,4 +2231,7 @@ export async function fetchAlbumDetailsFromMusicBrainz(
       data: tracksList,
     },
   };
+
+  discoveredAlbumsMemory.set(releaseGroupId, fullAlbum);
+  return fullAlbum;
 }

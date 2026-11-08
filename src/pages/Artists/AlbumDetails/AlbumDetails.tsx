@@ -30,6 +30,7 @@ import {
 import {
   type CatalogAlbum,
   type AlbumUserReview,
+  getInstantAlbumPreview,
   fetchAlbumDetailsFromMusicBrainz,
   submitInternalAlbumReview,
   toggleAlbumListened,
@@ -53,8 +54,15 @@ const genZPhrases: { [key: number]: { text: string; color: string } } = {
 
 export function AlbumDetails() {
   const { id } = useParams<{ id: string }>();
-  const [album, setAlbum] = useState<CatalogAlbum | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Renderização otimista instantânea (0ms) se o álbum já estiver em memória/catálogo
+  const [album, setAlbum] = useState<CatalogAlbum | null>(() =>
+    id ? getInstantAlbumPreview(id) : null
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(() =>
+    id ? !getInstantAlbumPreview(id) : true
+  );
+  const [isLoadingTracks, setIsLoadingTracks] = useState<boolean>(false);
 
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -69,29 +77,52 @@ export function AlbumDetails() {
   const [isLoadingCoverArt, setIsLoadingCoverArt] = useState<boolean>(false);
   const [coverLoadError, setCoverLoadError] = useState<boolean>(false);
 
-  const [submittedReviews, setSubmittedReviews] = useState<AlbumUserReview[]>([]);
+  const [submittedReviews, setSubmittedReviews] = useState<AlbumUserReview[]>(
+    () => (id ? getInstantAlbumPreview(id)?.reviews || [] : [])
+  );
 
   useEffect(() => {
-    async function fetchAlbumDetails() {
-      if (!id) return;
+    let isMounted = true;
+    if (!id) return;
+
+    const preview = getInstantAlbumPreview(id);
+    setCoverArt(null);
+
+    if (preview) {
+      setAlbum(preview);
+      setSubmittedReviews(preview.reviews || []);
+      setIsLoading(false);
+      // Se já tiver as músicas pré-carregadas, não precisa buscar nada na rede!
+      if (preview.tracks && preview.tracks.data.length > 0) {
+        setIsLoadingTracks(false);
+        return;
+      }
+      setIsLoadingTracks(true);
+    } else {
       setIsLoading(true);
-      setCoverArt(null);
-      try {
-        const data = await fetchAlbumDetailsFromMusicBrainz(id);
+    }
+
+    fetchAlbumDetailsFromMusicBrainz(id)
+      .then((data) => {
+        if (!isMounted) return;
         if (data) {
           setAlbum(data);
           setSubmittedReviews(data.reviews || []);
-        } else {
-          setAlbum(null);
         }
-      } catch (error) {
+      })
+      .catch((error) => {
         console.error('Erro ao buscar detalhes do álbum no MusicBrainz:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+          setIsLoadingTracks(false);
+        }
+      });
 
-    fetchAlbumDetails();
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const handlePostReview = (e: React.FormEvent) => {
@@ -230,7 +261,6 @@ export function AlbumDetails() {
 
         {/* Bloco Superior Dividido */}
         <div className="album-hero-content-grid">
-          {/* Esquerda do Topo (Botão de Voltar + Capa + Infos + Streaming) */}
           <div className="album-hero-left">
             <div className="w-full">
               <Link
@@ -260,6 +290,7 @@ export function AlbumDetails() {
                   <img
                     src={coverImage}
                     alt={album.title}
+                    decoding="async"
                     onError={handleCoverImageError}
                     className="album-cover-image"
                   />
@@ -481,28 +512,33 @@ export function AlbumDetails() {
           </div>
 
           {album.tracks &&
-            album.tracks.data &&
-            album.tracks.data.length > 0 && (
-              <div className="tracklist-section">
-                <h3 className="tracklist-title">
-                  <Clock className="h-5 w-5 text-primary" /> Músicas do Álbum (
-                  {album.tracks.data.length})
-                </h3>
-                <div className="space-y-1">
-                  {album.tracks.data.map((track, index: number) => (
-                    <div key={track.id} className="track-item">
-                      <div className="track-info">
-                        <span className="track-number">{index + 1}</span>
-                        <span className="track-name">{track.title}</span>
-                      </div>
-                      <span className="track-duration">
-                        {formatDuration(track.duration)}
-                      </span>
+          album.tracks.data &&
+          album.tracks.data.length > 0 ? (
+            <div className="tracklist-section">
+              <h3 className="tracklist-title">
+                <Clock className="h-5 w-5 text-primary" /> Músicas do Álbum (
+                {album.tracks.data.length})
+              </h3>
+              <div className="space-y-1">
+                {album.tracks.data.map((track, index: number) => (
+                  <div key={track.id} className="track-item">
+                    <div className="track-info">
+                      <span className="track-number">{index + 1}</span>
+                      <span className="track-name">{track.title}</span>
                     </div>
-                  ))}
-                </div>
+                    <span className="track-duration">
+                      {formatDuration(track.duration)}
+                    </span>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          ) : isLoadingTracks ? (
+            <div className="tracklist-section flex items-center justify-center py-8 gap-2 text-xs text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              Carregando lista de faixas...
+            </div>
+          ) : null}
         </div>
 
         {/* Direita da Base (Community Feed) */}

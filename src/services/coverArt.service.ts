@@ -2,11 +2,12 @@ const MB_RELEASE_SEARCH = '/api/musicbrainz/release';
 const CAA_RELEASE_BASE = 'https://coverartarchive.org/release';
 const CAA_RELEASE_GROUP_BASE = 'https://coverartarchive.org/release-group';
 const CACHE_PREFIX = 'musicpostr_coverart_v2_';
+const MISSING_COVERS_KEY = 'musicpostr_missing_covers_v2';
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 dias
 const NEGATIVE_CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 1 dia para álbuns sem capa no CAA
 
 export const DEFAULT_ALBUM_COVER =
-  "data:image/svg+xml;utf8," +
+  'data:image/svg+xml;utf8,' +
   encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
       <defs>
@@ -32,7 +33,7 @@ export const DEFAULT_ALBUM_COVER =
   );
 
 export const DEFAULT_ARTIST_IMAGE =
-  "data:image/svg+xml;utf8," +
+  'data:image/svg+xml;utf8,' +
   encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
       <defs>
@@ -48,6 +49,32 @@ export const DEFAULT_ARTIST_IMAGE =
     </svg>`
   );
 
+// Cache em memória das capas que não existem no CAA para evitar novas requisições 404
+const missingCoversMemory = new Set<string>();
+try {
+  const savedMissing = localStorage.getItem(MISSING_COVERS_KEY);
+  if (savedMissing) {
+    const parsed: string[] = JSON.parse(savedMissing);
+    parsed.forEach((id) => missingCoversMemory.add(id));
+  }
+} catch {
+  // ignore
+}
+
+function markCoverAsMissing(url: string): void {
+  const match = url.match(/coverartarchive\.org\/(?:release-group|release)\/([a-f0-9-]{36})/i);
+  if (!match?.[1]) return;
+  const mbid = match[1].toLowerCase();
+  if (missingCoversMemory.has(mbid)) return;
+  missingCoversMemory.add(mbid);
+  try {
+    const arr = Array.from(missingCoversMemory).slice(-300);
+    localStorage.setItem(MISSING_COVERS_KEY, JSON.stringify(arr));
+  } catch {
+    // ignore
+  }
+}
+
 export interface CoverArtResult {
   mbid: string;
   entityType?: 'release' | 'release-group';
@@ -62,11 +89,16 @@ interface CachedCoverArt {
   cachedAt: number;
 }
 
+const memoryCache = new Map<string, CoverArtResult | null>();
+
 export function getReleaseGroupCoverUrl(
   releaseGroupMbid: string,
   size: '250' | '500' | '1200' = '500'
 ): string {
   if (!releaseGroupMbid) return DEFAULT_ALBUM_COVER;
+  if (missingCoversMemory.has(releaseGroupMbid.toLowerCase())) {
+    return DEFAULT_ALBUM_COVER;
+  }
   return `${CAA_RELEASE_GROUP_BASE}/${releaseGroupMbid}/front-${size}`;
 }
 
@@ -75,12 +107,18 @@ export function getReleaseCoverUrl(
   size: '250' | '500' | '1200' = '500'
 ): string {
   if (!releaseMbid) return DEFAULT_ALBUM_COVER;
+  if (missingCoversMemory.has(releaseMbid.toLowerCase())) {
+    return DEFAULT_ALBUM_COVER;
+  }
   return `${CAA_RELEASE_BASE}/${releaseMbid}/front-${size}`;
 }
 
-export function handleCoverImageError(e: React.SyntheticEvent<HTMLImageElement, Event>): void {
+export function handleCoverImageError(
+  e: React.SyntheticEvent<HTMLImageElement, Event>
+): void {
   const target = e.currentTarget;
-  if (target.src !== DEFAULT_ALBUM_COVER) {
+  if (target.src && target.src !== DEFAULT_ALBUM_COVER) {
+    markCoverAsMissing(target.src);
     target.src = DEFAULT_ALBUM_COVER;
   }
 }
@@ -89,12 +127,13 @@ function buildCacheKey(albumTitle: string, artistName: string, mbid?: string): s
   if (mbid) {
     return `${CACHE_PREFIX}mbid::${mbid.toLowerCase().trim()}`;
   }
-  return `${CACHE_PREFIX}${artistName}::${albumTitle}`
-    .toLowerCase()
-    .trim();
+  return `${CACHE_PREFIX}${artistName}::${albumTitle}`.toLowerCase().trim();
 }
 
 function readCache(cacheKey: string): { found: boolean; result: CoverArtResult | null } {
+  if (memoryCache.has(cacheKey)) {
+    return { found: true, result: memoryCache.get(cacheKey) ?? null };
+  }
   try {
     const raw = localStorage.getItem(cacheKey);
     if (!raw) return { found: false, result: null };
@@ -104,6 +143,7 @@ function readCache(cacheKey: string): { found: boolean; result: CoverArtResult |
       localStorage.removeItem(cacheKey);
       return { found: false, result: null };
     }
+    memoryCache.set(cacheKey, parsed.result);
     return { found: true, result: parsed.result };
   } catch {
     return { found: false, result: null };
@@ -111,6 +151,7 @@ function readCache(cacheKey: string): { found: boolean; result: CoverArtResult |
 }
 
 function writeCache(cacheKey: string, result: CoverArtResult | null): void {
+  memoryCache.set(cacheKey, result);
   try {
     const payload: CachedCoverArt = { result, cachedAt: Date.now() };
     localStorage.setItem(cacheKey, JSON.stringify(payload));
@@ -197,7 +238,6 @@ export async function findAlbumCoverArt(
   const cached = readCache(cacheKey);
   if (cached.found) return cached.result;
 
-  // 1. Se tivermos um releaseId específico, tentamos direto no Cover Art Archive (que tem frente e verso)
   if (releaseId) {
     const releaseData = await fetchCaaJson(`${CAA_RELEASE_BASE}/${releaseId}`);
     const parsedRelease = parseCaaImages(releaseData, releaseId, 'release');
@@ -207,12 +247,10 @@ export async function findAlbumCoverArt(
     }
   }
 
-  // 2. Se tivermos o MBID (release-group ou release), consultamos o Cover Art Archive diretamente
   if (mbid) {
     const rgData = await fetchCaaJson(`${CAA_RELEASE_GROUP_BASE}/${mbid}`);
     const parsedRg = parseCaaImages(rgData, mbid, 'release-group');
 
-    // Se encontrou no release-group, mas ainda não tem verso (backUrl), tenta ver se o release do CAA tem verso
     if (parsedRg) {
       if (!parsedRg.backUrl && rgData?.release) {
         const linkedReleaseId = String(rgData.release).split('/').pop();
@@ -230,7 +268,6 @@ export async function findAlbumCoverArt(
       return parsedRg;
     }
 
-    // Talvez o mbid passado já seja um release MBID
     const relData = await fetchCaaJson(`${CAA_RELEASE_BASE}/${mbid}`);
     const parsedRel = parseCaaImages(relData, mbid, 'release');
     if (parsedRel) {
@@ -239,7 +276,6 @@ export async function findAlbumCoverArt(
     }
   }
 
-  // 3. Fallback: busca por título e artista no MusicBrainz
   const cleanTitle = sanitizeLucene(albumTitle);
   const cleanArtist = sanitizeLucene(artistName);
 
@@ -261,7 +297,6 @@ export async function findAlbumCoverArt(
     const data = await response.json();
     const releases: any[] = data?.releases ?? [];
 
-    // Prioriza um release que tenha frente e verso, ou pelo menos artwork
     const withFrontAndBack = releases.find(
       (release) =>
         release['cover-art-archive']?.artwork === true &&

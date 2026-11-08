@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
-  Loader2,
   Trophy,
   Flame,
   TrendingUp,
@@ -12,6 +11,7 @@ import {
   type CatalogAlbum,
   getTopRatedAlbumsByInternalReviews,
   getPopularAlbumsByInternalActivity,
+  getInitialNewReleases,
   fetchNewReleasesFromMusicBrainz,
 } from '../../services/musicBrainz.service';
 import { handleCoverImageError } from '../../services/coverArt.service';
@@ -34,18 +34,32 @@ const genresList = [
 
 type RankingFilterMode = 'top-rated' | 'popular' | 'releases';
 
+function computeInitialRankings(mode: RankingFilterMode): RankingAlbum[] {
+  const base =
+    mode === 'releases'
+      ? getInitialNewReleases(20)
+      : mode === 'popular'
+        ? getPopularAlbumsByInternalActivity(30)
+        : getTopRatedAlbumsByInternalReviews(30);
+  return base.map((item, idx) => ({ ...item, rank: idx + 1 }));
+}
+
 export function RankingsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialFilter =
-    (searchParams.get('filter') as RankingFilterMode) || 'top-rated';
+  const rawFilter = searchParams.get('filter') as RankingFilterMode;
+  const initialFilter: RankingFilterMode = [
+    'top-rated',
+    'popular',
+    'releases',
+  ].includes(rawFilter)
+    ? rawFilter
+    : 'top-rated';
 
-  const [filterMode, setFilterMode] = useState<RankingFilterMode>(
-    ['top-rated', 'popular', 'releases'].includes(initialFilter)
-      ? initialFilter
-      : 'top-rated'
+  const [filterMode, setFilterMode] =
+    useState<RankingFilterMode>(initialFilter);
+  const [rankings, setRankings] = useState<RankingAlbum[]>(() =>
+    computeInitialRankings(initialFilter)
   );
-  const [rankings, setRankings] = useState<RankingAlbum[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeGenre, setActiveGenre] = useState<string>('Todos');
 
   useEffect(() => {
@@ -59,43 +73,36 @@ export function RankingsPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    async function loadRankings() {
-      setIsLoading(true);
-      try {
-        let baseList: CatalogAlbum[] = [];
-        if (filterMode === 'releases') {
-          baseList = await fetchNewReleasesFromMusicBrainz(20);
-        } else if (filterMode === 'popular') {
-          baseList = getPopularAlbumsByInternalActivity(30);
-        } else {
-          baseList = getTopRatedAlbumsByInternalReviews(30);
-        }
+    let isMounted = true;
 
-        const withRank: RankingAlbum[] = baseList.map((item, idx) => ({
-          ...item,
-          rank: idx + 1,
-        }));
-        setRankings(withRank);
-      } catch (error) {
-        console.error('Erro ao carregar dados de ranking:', error);
-      } finally {
-        setIsLoading(false);
-      }
+    // Atualiza instantaneamente (0ms) com os dados em memória/cache
+    setRankings(computeInitialRankings(filterMode));
+
+    if (filterMode === 'releases') {
+      fetchNewReleasesFromMusicBrainz(20)
+        .then((freshReleases) => {
+          if (isMounted && freshReleases.length > 0) {
+            setRankings(
+              freshReleases.map((item, idx) => ({ ...item, rank: idx + 1 }))
+            );
+          }
+        })
+        .catch(() => {});
     }
-
-    loadRankings();
 
     const handleInternalSync = () => {
       if (filterMode !== 'releases') {
-        loadRankings();
+        setRankings(computeInitialRankings(filterMode));
       }
     };
     window.addEventListener('musicpostr:albums-updated', handleInternalSync);
-    return () =>
+    return () => {
+      isMounted = false;
       window.removeEventListener(
         'musicpostr:albums-updated',
         handleInternalSync
       );
+    };
   }, [filterMode]);
 
   const handleSelectMode = (mode: RankingFilterMode) => {
@@ -113,7 +120,6 @@ export function RankingsPage() {
 
   return (
     <div className="page-container">
-      {/* Cabeçalho */}
       <div className="page-header-wrapper">
         <div>
           <h1 className="page-title">
@@ -129,7 +135,6 @@ export function RankingsPage() {
           </p>
         </div>
 
-        {/* Abas de Modo do Ranking */}
         <div className="flex flex-wrap items-center gap-2 mt-4 sm:mt-0">
           <button
             onClick={() => handleSelectMode('top-rated')}
@@ -164,8 +169,7 @@ export function RankingsPage() {
         </div>
       </div>
 
-      {/* Seção Top 3 Destaques */}
-      {!isLoading && rankings.length >= 3 && (
+      {rankings.length >= 3 && (
         <div className="top-podium-section">
           <h2 className="section-heading">
             <Flame className="h-5 w-5 text-orange-500" /> Top 3 em Destaque
@@ -181,6 +185,7 @@ export function RankingsPage() {
                 <img
                   src={album.cover_medium || album.cover_big}
                   alt={album.title}
+                  decoding="async"
                   onError={handleCoverImageError}
                   className="podium-cover"
                 />
@@ -198,7 +203,6 @@ export function RankingsPage() {
         </div>
       )}
 
-      {/* Seção de Gêneros em Grade com Emojis */}
       <div className="genre-grid-section">
         <h2 className="section-heading">Momentos e Gêneros</h2>
         <div className="genre-cards-grid">
@@ -217,78 +221,71 @@ export function RankingsPage() {
         </div>
       </div>
 
-      {/* Tabela de Ranking Completa com Estatísticas */}
-      {isLoading ? (
-        <div className="min-h-[40vh] flex items-center justify-center">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      <div className="ranking-table-wrapper">
+        <div className="ranking-table-header">
+          <span>Posição</span>
+          <span>Álbum / Artista</span>
+          <span>Gênero</span>
+          <span>Ouvintes & Avaliações</span>
+          <span className="text-right">Nota Geral</span>
         </div>
-      ) : (
-        <div className="ranking-table-wrapper">
-          <div className="ranking-table-header">
-            <span>Posição</span>
-            <span>Álbum / Artista</span>
-            <span>Gênero</span>
-            <span>Ouvintes & Avaliações</span>
-            <span className="text-right">Nota Geral</span>
-          </div>
 
-          <div className="ranking-table-body">
-            {filteredRankings.map((item) => (
-              <Link
-                key={item.id}
-                to={`/album/${item.id}`}
-                className="ranking-row"
-              >
-                <div className="ranking-position">
-                  <span
-                    className={`pos-number ${
-                      item.rank <= 3 ? 'top-three' : ''
-                    }`}
-                  >
-                    #{item.rank}
-                  </span>
-                  <TrendingUp className="h-3 w-3 text-emerald-500" />
-                </div>
+        <div className="ranking-table-body">
+          {filteredRankings.map((item) => (
+            <Link
+              key={item.id}
+              to={`/album/${item.id}`}
+              className="ranking-row"
+            >
+              <div className="ranking-position">
+                <span
+                  className={`pos-number ${
+                    item.rank <= 3 ? 'top-three' : ''
+                  }`}
+                >
+                  #{item.rank}
+                </span>
+                <TrendingUp className="h-3 w-3 text-emerald-500" />
+              </div>
 
-                <div className="ranking-album-cell">
-                  <img
-                    src={item.cover_medium || item.cover_big}
-                    alt={item.title}
-                    onError={handleCoverImageError}
-                    className="ranking-thumb"
-                  />
-                  <div>
-                    <h4 className="ranking-album-name">{item.title}</h4>
-                    <p className="ranking-artist-name">{item.artist.name}</p>
-                  </div>
+              <div className="ranking-album-cell">
+                <img
+                  src={item.cover_medium || item.cover_big}
+                  alt={item.title}
+                  loading="lazy"
+                  decoding="async"
+                  onError={handleCoverImageError}
+                  className="ranking-thumb"
+                />
+                <div>
+                  <h4 className="ranking-album-name">{item.title}</h4>
+                  <p className="ranking-artist-name">{item.artist.name}</p>
                 </div>
+              </div>
 
-                <div className="ranking-genre">
-                  <span className="genre-tag">
-                    {item.genreName || 'Geral'}
-                  </span>
-                </div>
+              <div className="ranking-genre">
+                <span className="genre-tag">{item.genreName || 'Geral'}</span>
+              </div>
 
-                <div className="ranking-reviews-count flex flex-col">
-                  <span className="flex items-center gap-1 text-xs font-medium text-foreground">
-                    <Headphones className="h-3 w-3 text-primary" />
-                    {item.listenersCount.toLocaleString('pt-BR')} ouvintes
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">
-                    {item.totalReviews} avaliações
-                  </span>
-                </div>
+              <div className="ranking-reviews-count flex flex-col">
+                <span className="flex items-center gap-1 text-xs font-medium text-foreground">
+                  <Headphones className="h-3 w-3 text-primary" />
+                  {item.listenersCount.toLocaleString('pt-BR')} ouvintes
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  {item.totalReviews} avaliações
+                </span>
+              </div>
 
-                <div className="ranking-score-cell">
-                  <div className="musicpostr-mini-badge">
-                    {item.communityRating.toFixed(1)}
-                  </div>
+              <div className="ranking-score-cell">
+                <div className="musicpostr-mini-badge">
+                  {item.communityRating.toFixed(1)}
                 </div>
-              </Link>
-            ))}
-          </div>
+              </div>
+            </Link>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }

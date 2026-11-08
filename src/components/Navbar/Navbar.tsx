@@ -53,49 +53,49 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px]">
               <div className="flex flex-col gap-6 py-6">
-                <a
-                  href="/"
+                <Link
+                  to="/"
                   className="flex items-center gap-2 font-bold text-lg text-zinc-900 dark:text-white"
                   onClick={() => setIsOpen(false)}
                 >
                   <Music className="h-5 w-5 text-primary" />
                   <span>Musicpostr</span>
-                </a>
+                </Link>
                 <nav className="flex flex-col gap-4 text-base font-medium text-zinc-600 dark:text-zinc-400">
-                  <a href="/" onClick={() => setIsOpen(false)}>Início</a>
-                  <a href="/rankings" onClick={() => setIsOpen(false)}>Rankings</a>
-                  <a href="/reviews" onClick={() => setIsOpen(false)}>Reviews</a>
-                  <a href="/artistas" onClick={() => setIsOpen(false)}>Artistas</a>
+                  <Link to="/" onClick={() => setIsOpen(false)}>Início</Link>
+                  <Link to="/rankings" onClick={() => setIsOpen(false)}>Rankings</Link>
+                  <Link to="/reviews" onClick={() => setIsOpen(false)}>Reviews</Link>
+                  <Link to="/artistas" onClick={() => setIsOpen(false)}>Artistas</Link>
                 </nav>
               </div>
             </SheetContent>
           </Sheet>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            <a href="/" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
+            <Link to="/" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
               Início
-            </a>
-            <a href="/rankings" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
+            </Link>
+            <Link to="/rankings" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
               Rankings
-            </a>
-            <a href="/reviews" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
+            </Link>
+            <Link to="/reviews" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
               Reviews
-            </a>
-            <a href="/artistas" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
+            </Link>
+            <Link to="/artistas" className="transition-colors hover:text-zinc-900 dark:hover:text-white">
               Artistas
-            </a>
+            </Link>
           </nav>
         </div>
 
         {/* Centro: Logo / Nome do Site */}
         <div className="flex items-center justify-center">
-          <a
-            href="/"
+          <Link
+            to="/"
             className="flex items-center gap-2 font-bold text-xl tracking-wider text-zinc-900 dark:text-white uppercase"
           >
             <Music className="h-5 w-5 text-primary" />
             <span>Musicpostr</span>
-          </a>
+          </Link>
         </div>
 
         {/* Lado Direito: Ações (Busca, Favoritos e Perfil) */}

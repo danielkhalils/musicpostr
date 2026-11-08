@@ -9,7 +9,6 @@ import {
   ArrowRight,
   ShieldCheck,
   Mail,
-  Loader2,
   Newspaper,
   ExternalLink,
   Flame,
@@ -27,6 +26,7 @@ import {
   getHighlightAlbums,
   getPopularAlbumsByInternalActivity,
   getTopRatedAlbumsByInternalReviews,
+  getInitialNewReleases,
   fetchNewReleasesFromMusicBrainz,
   INITIAL_TOP_TRACKS,
 } from "../../services/musicBrainz.service";
@@ -62,16 +62,16 @@ export default function HomePage() {
   const [popularAlbums, setPopularAlbums] = useState<CatalogAlbum[]>(() =>
     getPopularAlbumsByInternalActivity(8)
   );
-  const [newReleases, setNewReleases] = useState<CatalogAlbum[]>([]);
+  const [newReleases, setNewReleases] = useState<CatalogAlbum[]>(() =>
+    getInitialNewReleases(8)
+  );
   const [topRatedAlbums, setTopRatedAlbums] = useState<CatalogAlbum[]>(() =>
     getTopRatedAlbumsByInternalReviews(8)
   );
   const [topTracks] = useState<CatalogTrack[]>(INITIAL_TOP_TRACKS);
   const [news, setNews] = useState<NewsArticle[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Ref para controlar a rolagem horizontal das Top Músicas (estilo YouTube Music)
   const tracksScrollRef = useRef<HTMLDivElement>(null);
 
   const scrollTracks = (direction: "left" | "right") => {
@@ -97,10 +97,15 @@ export default function HomePage() {
 
     window.addEventListener("musicpostr:albums-updated", syncInternalSections);
     return () =>
-      window.removeEventListener("musicpostr:albums-updated", syncInternalSections);
+      window.removeEventListener(
+        "musicpostr:albums-updated",
+        syncInternalSections
+      );
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function parseJson(res: Response | null) {
       if (!res || !res.ok) return null;
       const contentType = res.headers.get("content-type") || "";
@@ -112,42 +117,28 @@ export default function HomePage() {
       }
     }
 
-    async function fetchHomeData() {
-      setIsLoading(true);
-      try {
-        // Carrega as seções baseadas nas avaliações e ouvintes internos imediatamente
-        setHighlights(getHighlightAlbums(10));
-        setPopularAlbums(getPopularAlbumsByInternalActivity(8));
-        setTopRatedAlbums(getTopRatedAlbumsByInternalReviews(8));
+    // Atualiza Novos Lançamentos (MusicBrainz) e Notícias em segundo plano sem travar a tela
+    fetchNewReleasesFromMusicBrainz(8)
+      .then((mbNewReleases) => {
+        if (isMounted && mbNewReleases.length > 0) {
+          setNewReleases(mbNewReleases);
+        }
+      })
+      .catch(() => {});
 
-        const [mbNewReleases, newsRes] = await Promise.all([
-          fetchNewReleasesFromMusicBrainz(8),
-          fetch("/api/news").catch(() => null),
-        ]);
-
-        setNewReleases(mbNewReleases);
-
-        const newsData = await parseJson(newsRes);
-        if (newsData && newsData.articles) {
+    fetch("/api/news")
+      .then((res) => parseJson(res))
+      .then((newsData) => {
+        if (isMounted && newsData && newsData.articles) {
           setNews(newsData.articles.slice(0, 3));
         }
-      } catch (error) {
-        console.error("Erro ao carregar dados da Home:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+      })
+      .catch(() => {});
 
-    fetchHomeData();
+    return () => {
+      isMounted = false;
+    };
   }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   const currentAlbum = highlights[activeIndex] || popularAlbums[0];
 
@@ -226,6 +217,7 @@ export default function HomePage() {
                     <img
                       src={item.cover_medium || item.cover_big}
                       alt={item.title}
+                      decoding="async"
                       onError={handleCoverImageError}
                     />
                     <div className="hero-thumb-overlay">
@@ -269,6 +261,8 @@ export default function HomePage() {
                 <img
                   src={album.cover_big || album.cover_medium}
                   alt={album.title}
+                  loading="lazy"
+                  decoding="async"
                   onError={handleCoverImageError}
                 />
                 <div className="popular-rating-badge">
@@ -320,6 +314,8 @@ export default function HomePage() {
                   <img
                     src={album.cover_big || album.cover_medium}
                     alt={album.title}
+                    loading="lazy"
+                    decoding="async"
                     onError={handleCoverImageError}
                   />
                   <span className="absolute bottom-2 left-2 bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
@@ -364,6 +360,8 @@ export default function HomePage() {
                 <img
                   src={album.cover_big || album.cover_medium}
                   alt={album.title}
+                  loading="lazy"
+                  decoding="async"
                   onError={handleCoverImageError}
                 />
                 <div className="popular-rating-badge bg-amber-500 text-black font-extrabold">
@@ -407,7 +405,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. TOP MÚSICAS GLOBAIS (ESTILO YOUTUBE MUSIC COM BOTÕES DE NAVEGAÇÃO LATERAL) */}
+      {/* 6. TOP MÚSICAS GLOBAIS */}
       {topTracks.length > 0 && (
         <section className="content-section max-w-7xl mx-auto px-4 py-6 w-full">
           <div className="flex items-center justify-between mb-6">
@@ -437,7 +435,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Container horizontal com scroll oculto e comportamento estilo YouTube Music */}
           <div
             ref={tracksScrollRef}
             className="flex gap-4 overflow-x-auto scrollbar-none pb-2 snap-x snap-mandatory"
@@ -456,6 +453,8 @@ export default function HomePage() {
                     <img
                       src={track.album?.cover_medium}
                       alt={track.title}
+                      loading="lazy"
+                      decoding="async"
                       onError={handleCoverImageError}
                       className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                     />
@@ -514,6 +513,8 @@ export default function HomePage() {
                       <img
                         src={item.thumbnail}
                         alt={item.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

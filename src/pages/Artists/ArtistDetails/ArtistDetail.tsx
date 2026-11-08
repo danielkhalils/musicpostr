@@ -12,45 +12,74 @@ import "./ArtistDetail.css";
 import { Button } from "../../../components/ui/button";
 import {
   type CatalogAlbum,
+  getInstantArtistPreview,
   fetchArtistDetailsFromMusicBrainz,
 } from "../../../services/musicBrainz.service";
 import { handleCoverImageError } from "../../../services/coverArt.service";
 
 export function ArtistDetail() {
   const { id } = useParams<{ id: string }>();
-  const [artistName, setArtistName] = useState("");
-  const [artistBanner, setArtistBanner] = useState("");
-  const [albums, setAlbums] = useState<CatalogAlbum[]>([]);
-  const [epsAndSingles, setEpsAndSingles] = useState<CatalogAlbum[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const initialPreview = id ? getInstantArtistPreview(id) : null;
+
+  const [artistName, setArtistName] = useState(initialPreview?.name || "");
+  const [artistBanner, setArtistBanner] = useState(
+    initialPreview?.bannerUrl || ""
+  );
+  const [albums, setAlbums] = useState<CatalogAlbum[]>(
+    initialPreview?.albums || []
+  );
+  const [epsAndSingles, setEpsAndSingles] = useState<CatalogAlbum[]>(
+    initialPreview?.epsAndSingles || []
+  );
+  const [isLoading, setIsLoading] = useState(!initialPreview);
+  const [isSyncingDiscography, setIsSyncingDiscography] = useState(false);
 
   const [visibleAlbumsCount, setVisibleAlbumsCount] = useState(10);
   const [visibleEpsCount, setVisibleEpsCount] = useState(10);
 
   useEffect(() => {
-    async function fetchArtistDetails() {
-      if (!id) return;
-      setIsLoading(true);
-      setVisibleAlbumsCount(10);
-      setVisibleEpsCount(10);
+    let isMounted = true;
+    if (!id) return;
 
-      try {
-        const details = await fetchArtistDetailsFromMusicBrainz(id);
+    setVisibleAlbumsCount(10);
+    setVisibleEpsCount(10);
+
+    const preview = getInstantArtistPreview(id);
+    if (preview) {
+      setArtistName(preview.name);
+      setArtistBanner(preview.bannerUrl);
+      setAlbums(preview.albums);
+      setEpsAndSingles(preview.epsAndSingles);
+      setIsLoading(false);
+      setIsSyncingDiscography(true);
+    } else {
+      setIsLoading(true);
+    }
+
+    fetchArtistDetailsFromMusicBrainz(id)
+      .then((details) => {
+        if (!isMounted) return;
         setArtistName(details.name);
         setArtistBanner(details.bannerUrl);
         setAlbums(details.albums);
         setEpsAndSingles(details.epsAndSingles);
-      } catch (error) {
+      })
+      .catch((error) => {
         console.error(
           "Erro ao carregar detalhes do artista no MusicBrainz:",
           error
         );
-      } finally {
-        setIsLoading(false);
-      }
-    }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+          setIsSyncingDiscography(false);
+        }
+      });
 
-    fetchArtistDetails();
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   if (isLoading) {
@@ -88,9 +117,12 @@ export function ArtistDetail() {
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight text-foreground drop-shadow-xs break-words">
               {artistName || "Detalhes do Artista"}
             </h1>
-            <p className="text-muted-foreground mt-2 text-sm md:text-base font-medium">
+            <p className="text-muted-foreground mt-2 text-sm md:text-base font-medium flex items-center gap-2">
               Discografia completa via MusicBrainz & Cover Art Archive: álbuns,
               EPs e singles oficiais
+              {isSyncingDiscography && (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary inline" />
+              )}
             </p>
           </div>
         </div>
@@ -121,6 +153,8 @@ export function ArtistDetail() {
                           <img
                             src={coverUrl}
                             alt={album.title}
+                            loading="lazy"
+                            decoding="async"
                             onError={handleCoverImageError}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
@@ -180,6 +214,8 @@ export function ArtistDetail() {
                           <img
                             src={coverUrl}
                             alt={item.title}
+                            loading="lazy"
+                            decoding="async"
                             onError={handleCoverImageError}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import {
   type CatalogAlbum,
+  getInternalAlbumsStore,
   searchAlbumsInMusicBrainz,
 } from '../../services/musicBrainz.service';
 import { handleCoverImageError } from '../../services/coverArt.service';
@@ -32,16 +33,22 @@ const genresList = [
 ];
 
 export function ReviewsPage() {
+  const limit = 15;
   const [searchParams] = useSearchParams();
-  const [albums, setAlbums] = useState<CatalogAlbum[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [albums, setAlbums] = useState<CatalogAlbum[]>(() =>
+    getInternalAlbumsStore().slice(0, limit)
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
 
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [selectedGenre, setSelectedGenre] = useState<string>(() => {
     const g = searchParams.get('genre');
-    if (g && genresList.some((item) => item.name.toLowerCase() === g.toLowerCase())) {
+    if (
+      g &&
+      genresList.some((item) => item.name.toLowerCase() === g.toLowerCase())
+    ) {
       return (
         genresList.find((item) => item.name.toLowerCase() === g.toLowerCase())
           ?.name || 'Todos'
@@ -52,49 +59,73 @@ export function ReviewsPage() {
   const [selectedLabel, setSelectedLabel] = useState<string>('');
 
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalResults, setTotalResults] = useState<number>(0);
-  const limit = 15;
+  const [totalResults, setTotalResults] = useState<number>(
+    () => getInternalAlbumsStore().length
+  );
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
+    const trimmed = searchTerm.trim();
+    if (!trimmed) {
+      setDebouncedSearch('');
       setCurrentPage(1);
-    }, 450);
+      return;
+    }
+
+    // Filtra instantaneamente em memória enquanto aguarda o debounce da API
+    const instantMatches = getInternalAlbumsStore().filter(
+      (a) =>
+        a.title.toLowerCase().includes(trimmed.toLowerCase()) ||
+        a.artist.name.toLowerCase().includes(trimmed.toLowerCase())
+    );
+    if (instantMatches.length > 0) {
+      setAlbums(instantMatches.slice(0, limit));
+    }
+
+    const timer = setTimeout(() => {
+      setDebouncedSearch(trimmed);
+      setCurrentPage(1);
+    }, 280);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
   useEffect(() => {
-    async function fetchAlbums() {
-      setIsLoading(true);
-      try {
-        const offset = (currentPage - 1) * limit;
-        const { albums: fetched, total } = await searchAlbumsInMusicBrainz(
-          debouncedSearch,
-          limit,
-          offset
-        );
-        setAlbums(fetched);
-        setTotalResults(total);
-      } catch (error) {
-        console.error('Erro ao buscar álbuns no MusicBrainz:', error);
-        setAlbums([]);
-        setTotalResults(0);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+    let isMounted = true;
+    const offset = (currentPage - 1) * limit;
 
-    fetchAlbums();
+    if (!debouncedSearch.trim()) {
+      const store = getInternalAlbumsStore();
+      setAlbums(store.slice(offset, offset + limit));
+      setTotalResults(store.length);
+      setIsLoading(false);
+    } else {
+      setIsLoading(true);
+      searchAlbumsInMusicBrainz(debouncedSearch, limit, offset)
+        .then(({ albums: fetched, total }) => {
+          if (!isMounted) return;
+          setAlbums(fetched);
+          setTotalResults(total);
+        })
+        .catch((error) => {
+          console.error('Erro ao buscar álbuns no MusicBrainz:', error);
+        })
+        .finally(() => {
+          if (isMounted) setIsLoading(false);
+        });
+    }
 
     const syncReviews = () => {
       if (!debouncedSearch.trim()) {
-        fetchAlbums();
+        const store = getInternalAlbumsStore();
+        setAlbums(store.slice(offset, offset + limit));
+        setTotalResults(store.length);
       }
     };
     window.addEventListener('musicpostr:albums-updated', syncReviews);
-    return () =>
+    return () => {
+      isMounted = false;
       window.removeEventListener('musicpostr:albums-updated', syncReviews);
+    };
   }, [debouncedSearch, currentPage]);
 
   const availableYears = Array.from(
@@ -135,7 +166,6 @@ export function ReviewsPage() {
           </p>
         </div>
 
-        {/* Barra de Pesquisa */}
         <div className="reviews-search-wrapper">
           <Search className="reviews-search-icon" />
           <input
@@ -148,7 +178,6 @@ export function ReviewsPage() {
         </div>
       </div>
 
-      {/* Seção de Gêneros em Grade com Emojis */}
       <div className="genre-grid-section mb-6">
         <h2 className="section-heading mb-3">Filtrar por Momento ou Gênero</h2>
         <div className="genre-cards-grid">
@@ -167,7 +196,6 @@ export function ReviewsPage() {
         </div>
       </div>
 
-      {/* Painel de Filtros Secundários (Ano e Gravadora) */}
       <div className="reviews-filter-bar mb-8">
         <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
           <Filter className="h-4 w-4 text-primary" /> Filtros Adicionais:
@@ -215,7 +243,6 @@ export function ReviewsPage() {
         </div>
       </div>
 
-      {/* Tela de Loading */}
       {isLoading ? (
         <div className="min-h-[50vh] flex items-center justify-center">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -240,6 +267,8 @@ export function ReviewsPage() {
                       <img
                         src={album.cover_medium || album.cover_big}
                         alt={album.title}
+                        loading="lazy"
+                        decoding="async"
                         onError={handleCoverImageError}
                       />
                     ) : (
@@ -295,7 +324,6 @@ export function ReviewsPage() {
             ))}
           </div>
 
-          {/* Paginação */}
           <div className="pagination-container">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
