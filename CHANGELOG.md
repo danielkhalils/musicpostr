@@ -12,6 +12,8 @@ e esse projeto adere ao Semver [Versionamento Semântico](https://semver.org/spe
 - **0002** - Integrando API `MusicBrainz` e `Deezer` para imagens.
 - **0003** - Implementando telas de ranking, reviews e artistas e álbum.
 - **0004** - Implementando telas de perfil e configurações e abrir capa do álbum em HD.
+- **0005** - Implementando Home.
+- **0006** - Alterando a API do `Deezer` para `MusicBrainz`.
 
 ### Alterado (Changed)
 - 
